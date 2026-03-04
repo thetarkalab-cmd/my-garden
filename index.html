@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Inov's Forest</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #1a2e1a;
+    --moss: #2d4a2d;
+    --leaf: #4a7c4a;
+    --sage: #7aab7a;
+    --mist: #c8dfc8;
+    --cream: #f5f0e8;
+    --soil: #8b5e3c;
+    --amber: #d4924a;
+    --alert: #c0392b;
+    --gold: #c9a84c;
+    --water: #4a90b8;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--forest);
+    color: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(74,124,74,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(45,74,45,0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 10%, rgba(122,171,122,0.08) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    padding: 50px 24px 20px;
+    position: relative;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .greeting {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sage);
+    opacity: 0.8;
+  }
+
+  .app-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.1;
+  }
+
+  .app-title em {
+    font-style: italic;
+    color: var(--sage);
+  }
+
+  .header-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(122,171,122,0.15);
+    border: 1px solid rgba(122,171,122,0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .header-icon:hover { background: rgba(122,171,122,0.25); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 24px;
+  }
+
+  .stat-pill {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .stat-pill:hover { background: rgba(255,255,255,0.1); }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--mist);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sage);
+    opacity: 0.7;
+    margin-top: 3px;
+  }
+
+  /* Nav tabs */
+  .nav {
+    display: flex;
+    gap: 6px;
+    padding: 0 24px 20px;
+  }
+
+  .nav-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(122,171,122,0.25);
+    background: transparent;
+    color: var(--sage);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-btn.active {
+    background: var(--sage);
+    color: var(--forest);
+    border-color: var(--sage);
+    font-weight: 500;
+  }
+
+  /* Section label */
+  .section-label {
+    padding: 0 24px 12px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sage);
+    opacity: 0.6;
+  }
+
+  /* Plant cards */
+  .cards-container {
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+
+  .plant-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.4s ease both;
+  }
+
+  .plant-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .plant-card.status-critical::before { background: var(--alert); }
+  .plant-card.status-recovering::before { background: var(--amber); }
+  .plant-card.status-healthy::before { background: var(--sage); }
+  .plant-card.status-water::before { background: var(--water); }
+
+  .plant-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+    border-color: rgba(122,171,122,0.2);
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .plant-card:nth-child(1) { animation-delay: 0.05s; }
+  .plant-card:nth-child(2) { animation-delay: 0.1s; }
+  .plant-card:nth-child(3) { animation-delay: 0.15s; }
+  .plant-card:nth-child(4) { animation-delay: 0.2s; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .card-emoji {
+    width: 46px;
+    height: 46px;
+    background: rgba(122,171,122,0.12);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .card-header {
+    flex: 1;
+    margin-left: 12px;
+  }
+
+  .plant-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cream);
+    line-height: 1.2;
+  }
+
+  .plant-id {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--sage);
+    opacity: 0.6;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .badge-critical { background: rgba(192,57,43,0.2); color: #e74c3c; border: 1px solid rgba(192,57,43,0.3); }
+  .badge-recovering { background: rgba(212,146,74,0.2); color: var(--amber); border: 1px solid rgba(212,146,74,0.3); }
+  .badge-healthy { background: rgba(122,171,122,0.2); color: var(--sage); border: 1px solid rgba(122,171,122,0.3); }
+  .badge-water { background: rgba(74,144,184,0.2); color: #74b9e8; border: 1px solid rgba(74,144,184,0.3); }
+  .badge-shock { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+
+  /* Metrics row */
+  .metrics-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .metric {
+    flex: 1;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .metric-icon { font-size: 14px; margin-bottom: 2px; }
+  .metric-val {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mist);
+    line-height: 1;
+  }
+  .metric-lbl {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--sage);
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  /* Care note */
+  .care-note {
+    font-size: 12px;
+    color: var(--mist);
+    opacity: 0.7;
+    line-height: 1.5;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .care-note strong {
+    color: var(--sage);
+    font-weight: 500;
+  }
+
+  /* Action row */
+  .action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(122,171,122,0.25);
+    background: transparent;
+    color: var(--sage);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .action-btn:hover { background: rgba(122,171,122,0.12); border-color: var(--sage); }
+  .action-btn.primary {
+    background: rgba(122,171,122,0.15);
+    border-color: rgba(122,171,122,0.4);
+    font-weight: 500;
+  }
+
+  /* Water group card */
+  .water-group-card {
+    background: rgba(74,144,184,0.08);
+    border: 1px solid rgba(74,144,184,0.2);
+    border-radius: 20px;
+    padding: 18px 20px;
+    animation: slideUp 0.4s ease 0.25s both;
+  }
+
+  .water-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .water-group-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--cream);
+  }
+
+  .water-count {
+    background: rgba(74,144,184,0.25);
+    color: #74b9e8;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .water-plants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .water-plant-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 10px;
+  }
+
+  .water-plant-icon { font-size: 16px; }
+
+  .water-plant-name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--mist);
+  }
+
+  .water-plant-status {
+    font-size: 10px;
+    color: #74b9e8;
+    opacity: 0.8;
+  }
+
+  .batch-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(74,144,184,0.2);
+    border: 1px solid rgba(74,144,184,0.35);
+    border-radius: 12px;
+    color: #74b9e8;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .batch-btn:hover { background: rgba(74,144,184,0.3); }
+
+  /* Bottom nav */
+  .bottom-nav {
+    padding: 16px 24px 32px;
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .bottom-btn {
+    flex: 1;
+    padding: 14px 10px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: var(--sage);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .bottom-btn .bb-icon { font-size: 20px; }
+  .bottom-btn:hover { background: rgba(122,171,122,0.1); border-color: rgba(122,171,122,0.2); }
+  .bottom-btn.active { background: rgba(122,171,122,0.15); border-color: rgba(122,171,122,0.3); color: var(--mist); }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,20,10,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #1e3020;
+    border: 1px solid rgba(122,171,122,0.2);
+    border-radius: 28px 28px 0 0;
+    width: 100%;
+    max-width: 430px;
+    padding: 28px 24px 40px;
+    animation: slideModal 0.3s ease;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+
+  @keyframes slideModal {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: rgba(122,171,122,0.3);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: var(--cream);
+    margin-bottom: 4px;
+  }
+
+  .modal-subtitle {
+    font-size: 12px;
+    color: var(--sage);
+    opacity: 0.7;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .modal-section {
+    margin-bottom: 20px;
+  }
+
+  .modal-section-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sage);
+    opacity: 0.6;
+    margin-bottom: 10px;
+  }
+
+  .meter-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .meter-input {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(122,171,122,0.2);
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  .meter-input label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sage);
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+
+  .meter-input input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--cream);
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    text-align: center;
+    outline: none;
+  }
+
+  .meter-input input::placeholder { color: rgba(200,223,200,0.25); font-size: 16px; }
+
+  .symptom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .symptom-chip {
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--mist);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .symptom-chip.selected {
+    background: rgba(192,57,43,0.15);
+    border-color: rgba(192,57,43,0.35);
+    color: #e74c3c;
+  }
+
+  .diagnosis-box {
+    background: rgba(212,146,74,0.12);
+    border: 1px solid rgba(212,146,74,0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-top: 16px;
+  }
+
+  .diagnosis-title {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .diagnosis-text {
+    font-size: 13px;
+    color: var(--mist);
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+
+  .modal-close-btn {
+    width: 100%;
+    padding: 14px;
+    background: rgba(122,171,122,0.15);
+    border: 1px solid rgba(122,171,122,0.35);
+    border-radius: 14px;
+    color: var(--sage);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+  }
+  .modal-close-btn:hover { background: rgba(122,171,122,0.25); }
+
+  /* AI Chat Panel */
+  .ai-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    padding: 0 24px;
+  }
+
+  .ai-panel.visible { display: flex; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 16px;
+    max-height: 55vh;
+  }
+
+  .msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .msg.bot {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--mist);
+    border-radius: 4px 16px 16px 16px;
+    align-self: flex-start;
+  }
+
+  .msg.user {
+    background: rgba(122,171,122,0.2);
+    border: 1px solid rgba(122,171,122,0.3);
+    color: var(--cream);
+    border-radius: 16px 4px 16px 16px;
+    align-self: flex-end;
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(122,171,122,0.2);
+    border-radius: 14px;
+    padding: 12px 16px;
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: rgba(122,171,122,0.5); }
+  .chat-input::placeholder { color: rgba(200,223,200,0.3); }
+
+  .chat-send {
+    width: 46px;
+    height: 46px;
+    background: var(--sage);
+    border: none;
+    border-radius: 14px;
+    color: var(--forest);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .chat-send:hover { background: var(--mist); }
+
+  .chat-send.loading {
+    background: rgba(122,171,122,0.3);
+    cursor: not-allowed;
+  }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px 16px 16px 16px;
+    width: fit-content;
+  }
+  .typing span {
+    width: 7px; height: 7px;
+    background: var(--sage);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+    opacity: 0.7;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* Schedule view */
+  .schedule-view {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 24px;
+  }
+  .schedule-view.visible { display: flex; }
+
+  .schedule-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: slideUp 0.3s ease both;
+  }
+
+  .schedule-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-today { background: var(--sage); box-shadow: 0 0 8px var(--sage); }
+  .dot-soon { background: var(--amber); }
+  .dot-water { background: #74b9e8; }
+
+  .schedule-info { flex: 1; }
+  .schedule-plant { font-size: 14px; color: var(--cream); font-weight: 500; }
+  .schedule-task { font-size: 11px; color: var(--sage); opacity: 0.7; margin-top: 2px; }
+  .schedule-when { font-size: 12px; color: var(--mist); opacity: 0.6; white-space: nowrap; }
+
+  /* Section views */
+  .main-view { display: flex; flex-direction: column; }
+  .main-view.hidden { display: none; }
+
+  .scroll-area { overflow-y: auto; padding-bottom: 20px; }
+
+  /* Mumbai mode banner */
+  .mumbai-banner {
+    margin: 0 24px 16px;
+    background: rgba(74,144,184,0.12);
+    border: 1px solid rgba(74,144,184,0.25);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #74b9e8;
+    animation: slideUp 0.4s ease both;
+  }
+
+  .mumbai-icon { font-size: 18px; flex-shrink: 0; }
+
+  .dismiss-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: rgba(116,185,232,0.5);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="greeting">Mumbai Forest</div>
+        <div class="app-title">My <em>Garden</em></div>
+      </div>
+      <div class="header-icon" onclick="openAddPlant()">＋</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-pill">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Soil Plants</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-num">16</div>
+      <div class="stat-label">Water Plants</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-num">1</div>
+      <div class="stat-label">In Recovery</div>
+    </div>
+  </div>
+
+  <!-- Mumbai Mode Banner -->
+  <div class="mumbai-banner" id="mumbaiBanner">
+    <span class="mumbai-icon">💧</span>
+    <span><strong>Mumbai Mode</strong> — Humidity monitoring active. Keep diffuser near Areca Palm.</span>
+    <button class="dismiss-btn" onclick="document.getElementById('mumbaiBanner').style.display='none'">×</button>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchTab('plants', this)">My Plants</button>
+    <button class="nav-btn" onclick="switchTab('schedule', this)">Schedule</button>
+    <button class="nav-btn" onclick="switchTab('chat', this)">Ask AI</button>
+  </div>
+
+  <!-- PLANTS VIEW -->
+  <div class="main-view" id="plantsView">
+    <div class="section-label">Soil Plants</div>
+    <div class="cards-container">
+
+      <!-- Areca Palm -->
+      <div class="plant-card status-recovering" onclick="openPlant('areca')">
+        <div class="card-top">
+          <div class="card-emoji">🌴</div>
+          <div class="card-header">
+            <div class="plant-name">Areca Palm</div>
+            <div class="plant-id">AP_01 · Blue Pot · Balcony</div>
+          </div>
+          <span class="status-badge badge-recovering">Recovering</span>
+        </div>
+        <div class="metrics-row">
+          <div class="metric">
+            <div class="metric-icon">💧</div>
+            <div class="metric-val" id="ap-moisture">7</div>
+            <div class="metric-lbl">Moisture</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon">🧪</div>
+            <div class="metric-val" id="ap-ph">7.5</div>
+            <div class="metric-lbl">pH</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon">☀️</div>
+            <div class="metric-val" id="ap-light">Med</div>
+            <div class="metric-lbl">Light</div>
+          </div>
+        </div>
+        <div class="care-note">
+          <strong>Next:</strong> Wait until moisture hits 4–5 before next watering. Watch for mold resurgence. Rotate pot 90° daily.
+        </div>
+        <div class="action-row">
+          <button class="action-btn primary" onclick="event.stopPropagation(); openPlant('areca')">📊 Log Reading</button>
+          <button class="action-btn" onclick="event.stopPropagation(); markWatered('areca')">✓ Watered</button>
+        </div>
+      </div>
+
+      <!-- Red Aglaonema -->
+      <div class="plant-card status-healthy" onclick="openPlant('aglaonema')">
+        <div class="card-top">
+          <div class="card-emoji">🌿</div>
+          <div class="card-header">
+            <div class="plant-name">Red Aglaonema</div>
+            <div class="plant-id">AG_01 · Square Pot · Indoor</div>
+          </div>
+          <span class="status-badge badge-healthy">Thriving</span>
+        </div>
+        <div class="metrics-row">
+          <div class="metric">
+            <div class="metric-icon">💧</div>
+            <div class="metric-val" id="ag-moisture">4</div>
+            <div class="metric-lbl">Moisture</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon">🧪</div>
+            <div class="metric-val" id="ag-ph">6.5</div>
+            <div class="metric-lbl">pH</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon">☀️</div>
+            <div class="metric-val" id="ag-light">Low</div>
+            <div class="metric-lbl">Light</div>
+          </div>
+        </div>
+        <div class="care-note">
+          <strong>Status:</strong> Healthiest plant in collection. Let top 50% of soil dry before next watering. Plain RO water only.
+        </div>
+        <div class="action-row">
+          <button class="action-btn primary" onclick="event.stopPropagation(); openPlant('aglaonema')">📊 Log Reading</button>
+          <button class="action-btn" onclick="event.stopPropagation(); markWatered('aglaonema')">✓ Watered</button>
+        </div>
+      </div>
+
+      <!-- Lucky Bamboo in Soil -->
+      <div class="plant-card status-recovering" onclick="openPlant('bamboo')">
+        <div class="card-top">
+          <div class="card-emoji">🎋</div>
+          <div class="card-header">
+            <div class="plant-name">Lucky Bamboo</div>
+            <div class="plant-id">LB_01 · Yellow-Dot Pot · Window</div>
+          </div>
+          <span class="status-badge badge-shock">Transfer Shock</span>
+        </div>
+        <div class="metrics-row">
+          <div class="metric">
+            <div class="metric-icon">💧</div>
+            <div class="metric-val" id="lb-moisture">6</div>
+            <div class="metric-lbl">Moisture</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon">📅</div>
+            <div class="metric-val">Day 5</div>
+            <div class="metric-lbl">Transfer</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon">🌱</div>
+            <div class="metric-val">Acclim.</div>
+            <div class="metric-lbl">Phase</div>
+          </div>
+        </div>
+        <div class="care-note">
+          <strong>Acclimation mode:</strong> Keep soil moist for 5 more days. No fertilizer. Snip yellowed lower leaves. Bright indirect light near curtains.
+        </div>
+        <div class="action-row">
+          <button class="action-btn primary" onclick="event.stopPropagation(); openPlant('bamboo')">📊 Log Reading</button>
+          <button class="action-btn" onclick="event.stopPropagation(); markWatered('bamboo')">✓ Watered</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Water Plants Group -->
+    <div class="section-label" style="margin-top: 20px;">Water Plants</div>
+    <div class="cards-container">
+      <div class="water-group-card">
+        <div class="water-group-header">
+          <div>
+            <div class="water-group-title">Bottle Forest 🫙</div>
+            <div class="plant-id" style="margin-top:4px;">Test Tubes + Jameson Bottle</div>
+          </div>
+          <span class="water-count">16 plants</span>
+        </div>
+        <div class="water-plants-list">
+          <div class="water-plant-row">
+            <span class="water-plant-icon">🍃</span>
+            <span class="water-plant-name">Pothos / Money Plant</span>
+            <span class="water-plant-status">~10 tubes</span>
+          </div>
+          <div class="water-plant-row">
+            <span class="water-plant-icon">🌿</span>
+            <span class="water-plant-name">Monstera Adansonii</span>
+            <span class="water-plant-status">Root King 👑</span>
+          </div>
+          <div class="water-plant-row">
+            <span class="water-plant-icon">🎋</span>
+            <span class="water-plant-name">Lucky Bamboo cuttings</span>
+            <span class="water-plant-status">~4 tubes</span>
+          </div>
+          <div class="water-plant-row">
+            <span class="water-plant-icon">🥃</span>
+            <span class="water-plant-name">Lucky Bamboo — Jameson Bottle</span>
+            <span class="water-plant-status">Upgraded ✓</span>
+          </div>
+        </div>
+        <button class="batch-btn" onclick="batchWaterChange()">
+          💧 Batch Water Change — All 16 Plants
+        </button>
+      </div>
+    </div>
+
+    <div style="height: 100px;"></div>
+  </div>
+
+  <!-- SCHEDULE VIEW -->
+  <div class="schedule-view" id="scheduleView">
+    <div class="schedule-card" style="animation-delay:0.05s">
+      <div class="schedule-dot dot-today"></div>
+      <div class="schedule-info">
+        <div class="schedule-plant">Areca Palm — AP_01</div>
+        <div class="schedule-task">Check moisture; water when reading hits 4–5 with RO + ¼ tsp Epsom</div>
+      </div>
+      <div class="schedule-when">Today</div>
+    </div>
+    <div class="schedule-card" style="animation-delay:0.1s">
+      <div class="schedule-dot dot-water"></div>
+      <div class="schedule-info">
+        <div class="schedule-plant">Bottle Forest — All 16</div>
+        <div class="schedule-task">Weekly water change + 1 drop booster per tube, 2–3 drops in Jameson</div>
+      </div>
+      <div class="schedule-when">Sunday</div>
+    </div>
+    <div class="schedule-card" style="animation-delay:0.15s">
+      <div class="schedule-dot dot-soon"></div>
+      <div class="schedule-info">
+        <div class="schedule-plant">Red Aglaonema — AG_01</div>
+        <div class="schedule-task">Check soil. Water with plain RO when top 50% feels dry</div>
+      </div>
+      <div class="schedule-when">In 3–4 days</div>
+    </div>
+    <div class="schedule-card" style="animation-delay:0.2s">
+      <div class="schedule-dot dot-soon"></div>
+      <div class="schedule-info">
+        <div class="schedule-plant">Lucky Bamboo — LB_01</div>
+        <div class="schedule-task">End of acclimation window. Check root firmness & new growth</div>
+      </div>
+      <div class="schedule-when">In 5 days</div>
+    </div>
+    <div class="schedule-card" style="animation-delay:0.25s">
+      <div class="schedule-dot dot-today"></div>
+      <div class="schedule-info">
+        <div class="schedule-plant">Areca Palm — AP_01</div>
+        <div class="schedule-task">pH recheck. Target: below 7.0. Neem cake continues acidifying</div>
+      </div>
+      <div class="schedule-when">In 14 days</div>
+    </div>
+    <div class="schedule-card" style="animation-delay:0.3s">
+      <div class="schedule-dot dot-water"></div>
+      <div class="schedule-info">
+        <div class="schedule-plant">Monstera Adansonii</div>
+        <div class="schedule-task">"Root King" — plan transfer to larger glass bottle</div>
+      </div>
+      <div class="schedule-when">When ready</div>
+    </div>
+    <div style="height:100px;"></div>
+  </div>
+
+  <!-- AI CHAT VIEW -->
+  <div class="ai-panel" id="chatView">
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">
+        Hello! I'm your personal plant assistant. I know all about your Mumbai forest — the Areca diva, the Aglaonema, Lucky Bamboo in transfer shock, and your 16 water babies. What's going on today? 🌿
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Ask about your plants..." onkeydown="handleKey(event)" />
+      <button class="chat-send" id="sendBtn" onclick="sendMessage()">↑</button>
+    </div>
+    <div style="height:100px;"></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav" style="position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background: linear-gradient(to top, #1a2e1a 60%, transparent); padding-top:20px;">
+    <button class="bottom-btn active" id="bn-plants" onclick="switchTab('plants', null, 'bn-plants')">
+      <span class="bb-icon">🌿</span>
+      <span>Plants</span>
+    </button>
+    <button class="bottom-btn" id="bn-schedule" onclick="switchTab('schedule', null, 'bn-schedule')">
+      <span class="bb-icon">📅</span>
+      <span>Schedule</span>
+    </button>
+    <button class="bottom-btn" id="bn-chat" onclick="switchTab('chat', null, 'bn-chat')">
+      <span class="bb-icon">🤖</span>
+      <span>Ask AI</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- Plant Detail Modal -->
+<div class="modal-overlay" id="plantModal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Areca Palm</div>
+    <div class="modal-subtitle" id="modalSubtitle">AP_01 · LOG READING</div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">3-in-1 Meter Readings</div>
+      <div class="meter-inputs">
+        <div class="meter-input">
+          <label>Moisture</label>
+          <input type="number" id="inputMoisture" placeholder="1–10" min="1" max="10" step="0.5">
+        </div>
+        <div class="meter-input">
+          <label>pH</label>
+          <input type="number" id="inputPH" placeholder="6–9" min="4" max="9" step="0.5">
+        </div>
+        <div class="meter-input">
+          <label>Light</label>
+          <input type="text" id="inputLight" placeholder="Low/Med/Hi">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Symptoms</div>
+      <div class="symptom-grid">
+        <div class="symptom-chip" onclick="toggleSymptom(this)">🟤 Brown Tips</div>
+        <div class="symptom-chip" onclick="toggleSymptom(this)">🌱 Thin Leaves</div>
+        <div class="symptom-chip" onclick="toggleSymptom(this)">🟡 Yellowing</div>
+        <div class="symptom-chip" onclick="toggleSymptom(this)">🍄 Mold on Soil</div>
+        <div class="symptom-chip" onclick="toggleSymptom(this)">💧 Drooping</div>
+        <div class="symptom-chip" onclick="toggleSymptom(this)">⬜ Mineral Crust</div>
+      </div>
+      <div class="diagnosis-box" id="diagnosisBox" style="display:none">
+        <div class="diagnosis-title">⚡ Diagnosis</div>
+        <div class="diagnosis-text" id="diagnosisText"></div>
+      </div>
+    </div>
+
+    <button class="modal-close-btn" onclick="saveReading()">Save Reading</button>
+    <button class="modal-close-btn" style="background:transparent; border-color:rgba(255,255,255,0.1); margin-top:8px;" onclick="document.getElementById('plantModal').classList.remove('open')">Cancel</button>
+  </div>
+</div>
+
+<script>
+  // Plant data store
+  const plants = {
+    areca: { name: 'Areca Palm', id: 'AP_01', moisture: 7, ph: 7.5, light: 'Med' },
+    aglaonema: { name: 'Red Aglaonema', id: 'AG_01', moisture: 4, ph: 6.5, light: 'Low' },
+    bamboo: { name: 'Lucky Bamboo', id: 'LB_01', moisture: 6, ph: 7.0, light: 'Med' }
+  };
+
+  let currentPlant = null;
+
+  // Tab switching
+  function switchTab(tab, btn, bnId) {
+    // Nav buttons
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    // Bottom nav
+    document.querySelectorAll('.bottom-btn').forEach(b => b.classList.remove('active'));
+    const bnTarget = bnId || 'bn-' + tab;
+    const bnEl = document.getElementById(bnTarget);
+    if (bnEl) bnEl.classList.add('active');
+
+    // Sync top nav button
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const tabMap = { plants: 0, schedule: 1, chat: 2 };
+    if (!btn && tabMap[tab] !== undefined) {
+      navBtns[tabMap[tab]]?.classList.add('active');
+    }
+
+    // Views
+    document.getElementById('plantsView').classList.toggle('hidden', tab !== 'plants');
+    document.getElementById('scheduleView').classList.toggle('visible', tab === 'schedule');
+    document.getElementById('chatView').classList.toggle('visible', tab === 'chat');
+  }
+
+  // Open plant modal
+  function openPlant(plantKey) {
+    currentPlant = plantKey;
+    const p = plants[plantKey];
+    document.getElementById('modalTitle').textContent = p.name;
+    document.getElementById('modalSubtitle').textContent = p.id + ' · LOG READING';
+    document.getElementById('inputMoisture').value = '';
+    document.getElementById('inputPH').value = '';
+    document.getElementById('inputLight').value = '';
+    document.getElementById('diagnosisBox').style.display = 'none';
+    document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('plantModal').classList.add('open');
+  }
+
+  function closeModal(e) {
+    document.getElementById('plantModal').classList.remove('open');
+  }
+
+  function toggleSymptom(el) {
+    el.classList.toggle('selected');
+    updateDiagnosis();
+  }
+
+  function updateDiagnosis() {
+    const selected = [...document.querySelectorAll('.symptom-chip.selected')].map(c => c.textContent.trim());
+    if (selected.length === 0) {
+      document.getElementById('diagnosisBox').style.display = 'none';
+      return;
+    }
+
+    const ph = parseFloat(document.getElementById('inputPH').value) || (currentPlant ? plants[currentPlant].ph : 7);
+    const moisture = parseFloat(document.getElementById('inputMoisture').value);
+
+    let diagnosis = '';
+
+    if (selected.some(s => s.includes('Thin Leaves'))) {
+      diagnosis += '💊 <strong>Magnesium deficiency</strong> — Add 1 tsp Epsom Salt to 1L RO water on next watering.<br>';
+    }
+    if (selected.some(s => s.includes('Brown Tips'))) {
+      diagnosis += '💧 <strong>Mineral sensitivity</strong> — Switch to RO water only. Trim tips in V-shape with clean shears.<br>';
+    }
+    if (selected.some(s => s.includes('Yellowing'))) {
+      if (moisture > 7) {
+        diagnosis += '🚨 <strong>Overwatering suspected</strong> — Move to balcony for airflow. No water until moisture hits 4–5.<br>';
+      } else {
+        diagnosis += '🟡 <strong>Nutrient deficiency or transfer shock</strong> — Check if this is a recently transferred plant. If so, this is normal sacrifice behaviour.<br>';
+      }
+    }
+    if (selected.some(s => s.includes('Mold'))) {
+      diagnosis += '🍄 <strong>Fungal growth</strong> — Scrape white fuzz, apply Neem cake powder, move to balcony for UV + airflow. Stop misting immediately.<br>';
+    }
+    if (selected.some(s => s.includes('Drooping'))) {
+      diagnosis += '📉 <strong>Structural weakness / root stress</strong> — Check base of stem (firm = stressed, mushy = rotting). Rotate pot 180°. Support with soft tie if needed.<br>';
+    }
+    if (selected.some(s => s.includes('Mineral Crust'))) {
+      diagnosis += '⬜ <strong>Salt buildup from hard water</strong> — Scrape top 1cm of soil, replace with fresh Ugaoo mix. Use only RO water going forward.<br>';
+    }
+    if (ph > 7.2 && !diagnosis.includes('Alkaline')) {
+      diagnosis += `⚗️ <strong>High pH (${ph}) = Nutrient Lockout</strong> — Use ¼ tsp Epsom Salt in RO water to bypass alkalinity. Neem cake will gradually lower pH over 2 weeks.<br>`;
+    }
+
+    if (diagnosis) {
+      document.getElementById('diagnosisBox').style.display = 'block';
+      document.getElementById('diagnosisText').innerHTML = diagnosis;
+    }
+  }
+
+  document.getElementById('inputPH').addEventListener('input', updateDiagnosis);
+  document.getElementById('inputMoisture').addEventListener('input', updateDiagnosis);
+
+  function saveReading() {
+    if (!currentPlant) return;
+    const m = document.getElementById('inputMoisture').value;
+    const p = document.getElementById('inputPH').value;
+    const l = document.getElementById('inputLight').value;
+
+    if (m) {
+      plants[currentPlant].moisture = parseFloat(m);
+      const el = document.getElementById(currentPlant === 'areca' ? 'ap-moisture' : currentPlant === 'aglaonema' ? 'ag-moisture' : 'lb-moisture');
+      if (el) el.textContent = parseFloat(m).toFixed(1);
+    }
+    if (p) plants[currentPlant].ph = parseFloat(p);
+    if (l) plants[currentPlant].light = l;
+
+    document.getElementById('plantModal').classList.remove('open');
+    showToast('Reading saved for ' + plants[currentPlant].name + ' ✓');
+  }
+
+  function markWatered(plantKey) {
+    showToast('Watering logged for ' + plants[plantKey].name + ' 💧');
+  }
+
+  function batchWaterChange() {
+    showToast('Water change logged for all 16 plants 💧 + booster drops added');
+  }
+
+  function openAddPlant() {
+    showToast('Add plant feature coming soon 🌱');
+  }
+
+  // Toast notification
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#2d4a2d;border:1px solid rgba(122,171,122,0.4);color:#c8dfc8;padding:12px 20px;border-radius:12px;font-size:13px;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);animation:slideUp 0.3s ease`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2800);
+  }
+
+  // AI Chat
+  const systemPrompt = `You are a personal plant care assistant for a user in Mumbai, India who goes by Inov. You know their entire plant collection:
+
+SOIL PLANTS:
+- Areca Palm (AP_01, blue pot) - recovering from root rot, mold, high pH (7-8), magnesium deficiency. Treatments: Ugaoo potting mix top-up, Epsom salt, Sea Secret (IFFCO), Neem cake powder. Currently on balcony mornings. Do NOT overwater.
+- Red Aglaonema (AG_01, square pot) - healthiest plant. Had mineral crust which was removed. Plain RO water only. Let top 50% dry before watering.
+- Lucky Bamboo (LB_01, yellow-dotted pot) - recently transferred from water test tube to soil. In transfer shock, yellowing lower leaves are normal. Keep moist for acclimation. No fertilizer for 14 days.
+
+WATER PLANTS (~16 total):
+- ~10 Pothos/Money Plant cuttings in test tubes
+- Monstera Adansonii "Root King" - most elaborate root system, candidate for bottle upgrade
+- Lucky Bamboo cuttings in test tubes
+- Lucky Bamboo in tinted Jameson bottle (upgraded)
+Maintenance: Weekly RO water change, 1 drop booster per tube, 2-3 drops in Jameson bottle.
+
+KEY CARE RULES:
+- Always use RO water (not tap - Mumbai water has fluoride/chlorine issues)
+- Epsom salt for Areca palm magnesium deficiency (1 tsp per 1L RO water)
+- Neem cake powder as antifungal and slow pH reducer
+- Sea Secret (IFFCO seaweed) as general tonic
+- 3-in-1 meter: moisture 4-5 = ideal watering zone for Areca, 3 = water Aglaonema
+- pH for Areca should be 6.0-6.5 (currently too alkaline at 7-8)
+- Never mist when mold is present or moisture is high
+- Coriander: decided not to grow
+- Aglaonema cutting propagation: not done yet
+
+Be warm, specific, and reference their exact plants by name and ID. Keep responses concise for a mobile app. Use emoji sparingly.`;
+
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const btn = document.getElementById('sendBtn');
+    btn.classList.add('loading');
+    btn.textContent = '...';
+
+    appendMsg(msg, 'user');
+    input.value = '';
+
+    const typingEl = document.createElement('div');
+    typingEl.className = 'typing';
+    typingEl.innerHTML = '<span></span><span></span><span></span>';
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.appendChild(typingEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Collect conversation history
+    const msgEls = document.querySelectorAll('.msg');
+    const history = [];
+    msgEls.forEach(el => {
+      if (el.classList.contains('user')) history.push({ role: 'user', content: el.textContent });
+      else if (el.classList.contains('bot')) history.push({ role: 'assistant', content: el.textContent });
+    });
+    // Last user message is already appended; don't double-add
+    const messages = history.slice(0, -1); // remove last user (already added as current)
+    messages.push({ role: 'user', content: msg });
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: messages
+        })
+      });
+
+      const data = await response.json();
+      typingEl.remove();
+
+      const reply = data.content?.[0]?.text || 'Sorry, I had trouble responding. Try again!';
+      appendMsg(reply, 'bot');
+    } catch (err) {
+      typingEl.remove();
+      appendMsg('Connection issue. Please try again.', 'bot');
+    }
+
+    btn.classList.remove('loading');
+    btn.textContent = '↑';
+  }
+
+  function appendMsg(text, role) {
+    const chatMessages = document.getElementById('chatMessages');
+    const el = document.createElement('div');
+    el.className = 'msg ' + role;
+    el.textContent = text;
+    chatMessages.appendChild(el);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter') sendMessage();
+  }
+</script>
+</body>
+</html>
