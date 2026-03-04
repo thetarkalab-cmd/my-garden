@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Garden</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest: #141f14;
+  --moss: #1e301e;
+  --leaf: #3d6b3d;
+  --sage: #7aab7a;
+  --mist: #c8dfc8;
+  --cream: #f2ede4;
+  --amber: #c9874a;
+  --alert: #b83232;
+  --gold: #c9a84c;
+  --water: #3d7fa8;
+  --water-light: #74b9e8;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--forest);
+  color:var(--cream);
+  height:100vh;
+  overflow:hidden;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(61,107,61,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(30,48,30,0.25) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── PIN LOCK ── */
+#pinLock {
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:var(--forest);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+}
+#pinLock::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(61,107,61,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(30,48,30,0.3) 0%, transparent 50%);
+  pointer-events:none;
+}
+.pin-logo {
+  font-size:52px;
+  margin-bottom:16px;
+  animation: pinPop 0.5s ease;
+}
+@keyframes pinPop {
+  from { transform:scale(0.7); opacity:0; }
+  to { transform:scale(1); opacity:1; }
+}
+.pin-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:32px;
+  color:var(--cream);
+  margin-bottom:6px;
+  animation: pinFade 0.5s ease 0.1s both;
+}
+.pin-title em { font-style:italic; color:var(--sage); }
+.pin-subtitle {
+  font-size:12px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.6;
+  margin-bottom:40px;
+  animation: pinFade 0.5s ease 0.15s both;
+}
+@keyframes pinFade {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.pin-dots {
+  display:flex;
+  gap:16px;
+  margin-bottom:36px;
+  animation: pinFade 0.5s ease 0.2s both;
+}
+.pin-dot {
+  width:14px; height:14px;
+  border-radius:50%;
+  border:2px solid rgba(122,171,122,0.4);
+  background:transparent;
+  transition:all 0.15s;
+}
+.pin-dot.filled {
+  background:var(--sage);
+  border-color:var(--sage);
+  box-shadow:0 0 10px rgba(122,171,122,0.5);
+}
+.pin-dot.error {
+  background:var(--alert);
+  border-color:var(--alert);
+  animation:pinShake 0.35s ease;
+}
+@keyframes pinShake {
+  0%,100% { transform:translateX(0); }
+  20% { transform:translateX(-6px); }
+  40% { transform:translateX(6px); }
+  60% { transform:translateX(-4px); }
+  80% { transform:translateX(4px); }
+}
+.pin-keypad {
+  display:grid;
+  grid-template-columns:repeat(3, 72px);
+  gap:12px;
+  animation: pinFade 0.5s ease 0.25s both;
+}
+.pin-key {
+  width:72px; height:72px;
+  border-radius:50%;
+  border:1px solid rgba(122,171,122,0.2);
+  background:rgba(255,255,255,0.05);
+  color:var(--cream);
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.12s;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.pin-key:hover { background:rgba(122,171,122,0.12); border-color:rgba(122,171,122,0.4); }
+.pin-key:active { transform:scale(0.92); background:rgba(122,171,122,0.2); }
+.pin-key.empty { border:none; background:transparent; cursor:default; }
+.pin-key.delete { font-size:20px; color:var(--sage); opacity:0.7; }
+.pin-error-msg {
+  margin-top:20px;
+  font-size:12px;
+  color:var(--alert);
+  letter-spacing:1px;
+  opacity:0;
+  transition:opacity 0.2s;
+  animation: pinFade 0.3s ease both;
+}
+.pin-error-msg.show { opacity:1; }
+
+/* ── PAGE SYSTEM ── */
+.page {
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
+  z-index:1;
+}
+.page.hidden { transform:translateX(100%); opacity:0; pointer-events:none; }
+.page.slide-left { transform:translateX(-40%); opacity:0; pointer-events:none; }
+
+/* ── SCROLLABLE BODY ── */
+.page-body {
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:100px;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  padding:52px 22px 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+  background:linear-gradient(to bottom, var(--forest) 80%, transparent);
+  position:relative;
+  z-index:2;
+}
+.back-btn {
+  width:38px; height:38px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:18px; color:var(--sage);
+  flex-shrink:0;
+  transition:background 0.2s;
+}
+.back-btn:hover { background:rgba(255,255,255,0.12); }
+.topbar-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:26px;
+  font-weight:400;
+  color:var(--cream);
+  flex:1;
+}
+.topbar-title em { font-style:italic; color:var(--sage); }
+
+/* ── HOME PAGE ── */
+.home-header {
+  padding:52px 22px 20px;
+  flex-shrink:0;
+}
+.home-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:400;
+  line-height:1.1;
+  color:var(--cream);
+}
+.home-title em { font-style:italic; color:var(--sage); }
+.home-date {
+  font-size:12px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.6;
+  margin-top:6px;
+}
+
+/* ── STAT TILES ── */
+.stat-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  padding:0 22px 22px;
+}
+.stat-tile {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;
+  padding:18px 16px;
+  cursor:pointer;
+  transition:all 0.22s;
+  position:relative;
+  overflow:hidden;
+}
+.stat-tile::after {
+  content:'›';
+  position:absolute;
+  right:14px; top:50%;
+  transform:translateY(-50%);
+  font-size:20px;
+  color:var(--sage);
+  opacity:0.4;
+}
+.stat-tile:hover { background:rgba(255,255,255,0.09); transform:translateY(-2px); }
+.stat-tile:active { transform:scale(0.97); }
+.stat-num {
+  font-family:'Cormorant Garamond',serif;
+  font-size:38px;
+  font-weight:600;
+  color:var(--mist);
+  line-height:1;
+}
+.stat-label {
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.7;
+  margin-top:4px;
+}
+.stat-tile.soil { border-color:rgba(122,171,122,0.2); }
+.stat-tile.soil .stat-num { color:var(--sage); }
+.stat-tile.water { border-color:rgba(74,144,184,0.25); }
+.stat-tile.water .stat-num { color:var(--water-light); }
+
+/* ── ALERT SECTION ── */
+.section-label {
+  padding:0 22px 10px;
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.55;
+}
+
+.alert-scroll {
+  display:flex;
+  gap:12px;
+  padding:0 22px 22px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.alert-scroll::-webkit-scrollbar { display:none; }
+
+.alert-card {
+  flex-shrink:0;
+  width:220px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:16px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.alert-card:active { transform:scale(0.97); }
+.alert-card.urgent { border-color:rgba(184,50,50,0.35); background:rgba(184,50,50,0.07); }
+.alert-card.warning { border-color:rgba(201,135,74,0.35); background:rgba(201,135,74,0.07); }
+.alert-card.info { border-color:rgba(74,144,184,0.3); background:rgba(74,144,184,0.07); }
+.alert-card.ok { border-color:rgba(122,171,122,0.25); background:rgba(122,171,122,0.06); }
+
+.alert-tag {
+  font-size:10px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  font-weight:500;
+  margin-bottom:8px;
+}
+.tag-urgent { color:#e05555; }
+.tag-warning { color:var(--amber); }
+.tag-info { color:var(--water-light); }
+.tag-ok { color:var(--sage); }
+
+.alert-plant {
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px;
+  color:var(--cream);
+  margin-bottom:5px;
+}
+.alert-task {
+  font-size:12px;
+  color:var(--mist);
+  opacity:0.7;
+  line-height:1.5;
+}
+
+/* ── PLANT LIST PAGE ── */
+.plant-grid {
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:0 22px;
+}
+
+.plant-tile {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:all 0.22s;
+  animation:fadeUp 0.35s ease both;
+}
+.plant-tile:hover { background:rgba(255,255,255,0.08); transform:translateY(-2px); }
+.plant-tile:active { transform:scale(0.98); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.plant-tile:nth-child(1) { animation-delay:0.04s; }
+.plant-tile:nth-child(2) { animation-delay:0.08s; }
+.plant-tile:nth-child(3) { animation-delay:0.12s; }
+.plant-tile:nth-child(4) { animation-delay:0.16s; }
+
+.tile-status-bar { height:3px; width:100%; }
+.bar-recovering { background:linear-gradient(90deg, var(--amber), #e8a855); }
+.bar-healthy { background:linear-gradient(90deg, var(--sage), #9ecf9e); }
+.bar-shock { background:linear-gradient(90deg, var(--gold), #e8cc66); }
+.bar-water { background:linear-gradient(90deg, var(--water), var(--water-light)); }
+
+.tile-inner {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px 18px;
+}
+
+.tile-photo {
+  width:62px; height:62px;
+  border-radius:14px;
+  object-fit:cover;
+  flex-shrink:0;
+  background:rgba(122,171,122,0.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+}
+.tile-photo img {
+  width:100%; height:100%;
+  object-fit:cover;
+  border-radius:14px;
+  position:absolute;
+  inset:0;
+}
+.tile-photo .upload-hint {
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  opacity:0;
+  transition:opacity 0.2s;
+  font-size:20px;
+}
+.tile-photo:hover .upload-hint { opacity:1; }
+.tile-photo input[type=file] {
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+  width:100%;
+  height:100%;
+}
+
+.tile-info { flex:1; min-width:0; }
+.tile-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;
+  font-weight:600;
+  color:var(--cream);
+}
+.tile-id {
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.6;
+  margin-top:2px;
+}
+.tile-note {
+  font-size:12px;
+  color:var(--mist);
+  opacity:0.65;
+  margin-top:5px;
+  line-height:1.4;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.tile-badge {
+  padding:5px 10px;
+  border-radius:20px;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  font-weight:500;
+  flex-shrink:0;
+}
+.badge-recovering { background:rgba(201,135,74,0.18); color:var(--amber); border:1px solid rgba(201,135,74,0.3); }
+.badge-healthy { background:rgba(122,171,122,0.18); color:var(--sage); border:1px solid rgba(122,171,122,0.3); }
+.badge-shock { background:rgba(201,168,76,0.18); color:var(--gold); border:1px solid rgba(201,168,76,0.3); }
+.badge-water { background:rgba(74,144,184,0.18); color:var(--water-light); border:1px solid rgba(74,144,184,0.3); }
+
+/* Metrics mini row */
+.tile-metrics {
+  display:flex;
+  gap:8px;
+  padding:0 18px 14px;
+}
+.mini-metric {
+  flex:1;
+  background:rgba(0,0,0,0.18);
+  border-radius:10px;
+  padding:7px 8px;
+  text-align:center;
+}
+.mm-val { font-size:13px; font-weight:500; color:var(--mist); }
+.mm-lbl { font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--sage); opacity:0.6; margin-top:1px; }
+
+/* Water tiles grid */
+.water-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  padding:0 22px;
+}
+.water-tile {
+  background:rgba(74,144,184,0.08);
+  border:1px solid rgba(74,144,184,0.2);
+  border-radius:18px;
+  padding:16px 14px;
+  cursor:pointer;
+  transition:all 0.22s;
+  animation:fadeUp 0.35s ease both;
+  position:relative;
+  overflow:hidden;
+}
+.water-tile:hover { background:rgba(74,144,184,0.14); transform:translateY(-2px); }
+.water-tile:active { transform:scale(0.97); }
+.water-tile-photo {
+  width:100%;
+  height:80px;
+  border-radius:12px;
+  background:rgba(74,144,184,0.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+.water-tile-photo img {
+  width:100%; height:100%;
+  object-fit:cover;
+  border-radius:12px;
+  position:absolute;
+  inset:0;
+}
+.water-tile-photo .upload-hint {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px;
+  opacity:0; transition:opacity 0.2s;
+  font-size:20px;
+}
+.water-tile-photo:hover .upload-hint { opacity:1; }
+.water-tile-photo input[type=file] {
+  position:absolute; inset:0;
+  opacity:0; cursor:pointer;
+  width:100%; height:100%;
+}
+.water-tile-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:16px;
+  color:var(--cream);
+  font-weight:600;
+}
+.water-tile-sub {
+  font-size:11px;
+  color:var(--water-light);
+  opacity:0.7;
+  margin-top:3px;
+}
+.batch-bar {
+  margin:16px 22px 0;
+  padding:13px 16px;
+  background:rgba(74,144,184,0.12);
+  border:1px solid rgba(74,144,184,0.25);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  transition:all 0.2s;
+  font-size:13px;
+  color:var(--water-light);
+  font-weight:500;
+}
+.batch-bar:hover { background:rgba(74,144,184,0.2); }
+
+/* ── PLANT DETAIL PAGE ── */
+.detail-hero {
+  width:100%;
+  height:240px;
+  position:relative;
+  flex-shrink:0;
+  background:rgba(122,171,122,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:72px;
+  overflow:hidden;
+}
+.detail-hero img {
+  width:100%; height:100%;
+  object-fit:cover;
+  position:absolute;
+  inset:0;
+}
+.detail-hero-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom, rgba(20,31,20,0.2) 0%, rgba(20,31,20,0.85) 100%);
+}
+.detail-hero-info {
+  position:absolute;
+  bottom:20px;
+  left:22px;
+  right:22px;
+}
+.detail-hero-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:34px;
+  color:var(--cream);
+  font-weight:400;
+}
+.detail-hero-id {
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.8;
+  margin-top:3px;
+}
+.detail-hero .upload-photo-btn {
+  position:absolute;
+  top:16px; right:16px;
+  background:rgba(0,0,0,0.45);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;
+  padding:7px 12px;
+  font-size:12px;
+  color:var(--cream);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  z-index:3;
+}
+.detail-hero input[type=file] {
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+  z-index:4;
+}
+
+.detail-body { padding:20px 22px; }
+
+.detail-metrics {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:20px;
+}
+.detail-metric {
+  background:rgba(0,0,0,0.22);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:14px;
+  padding:12px 10px;
+  text-align:center;
+}
+.dm-icon { font-size:18px; margin-bottom:4px; }
+.dm-val {
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;
+  color:var(--mist);
+  line-height:1;
+}
+.dm-lbl { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--sage); opacity:0.6; margin-top:3px; }
+
+.detail-section-title {
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.6;
+  margin-bottom:10px;
+}
+
+.care-note-box {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:14px 16px;
+  font-size:13px;
+  color:var(--mist);
+  line-height:1.65;
+  opacity:0.9;
+  margin-bottom:20px;
+}
+.care-note-box strong { color:var(--sage); font-weight:500; }
+
+/* Log reading */
+.log-form {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:20px;
+}
+.meter-inputs {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:12px;
+}
+.meter-input {
+  background:rgba(0,0,0,0.25);
+  border:1px solid rgba(122,171,122,0.2);
+  border-radius:12px;
+  padding:10px 8px;
+  text-align:center;
+}
+.meter-input label {
+  display:block;
+  font-size:9px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--sage);
+  opacity:0.7;
+  margin-bottom:5px;
+}
+.meter-input input {
+  width:100%;
+  background:transparent;
+  border:none;
+  color:var(--cream);
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;
+  text-align:center;
+  outline:none;
+}
+.meter-input input::placeholder { color:rgba(200,223,200,0.2); font-size:16px; }
+
+.symptom-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:12px;
+}
+.symptom-chip {
+  padding:9px 12px;
+  background:rgba(0,0,0,0.18);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;
+  font-size:12px;
+  color:var(--mist);
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.symptom-chip.selected {
+  background:rgba(184,50,50,0.14);
+  border-color:rgba(184,50,50,0.35);
+  color:#e05555;
+}
+
+.diagnosis-box {
+  background:rgba(201,135,74,0.1);
+  border:1px solid rgba(201,135,74,0.28);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:12px;
+}
+.diag-title {
+  font-size:10px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--amber);
+  margin-bottom:7px;
+}
+.diag-text {
+  font-size:12px;
+  color:var(--mist);
+  line-height:1.6;
+  opacity:0.9;
+}
+
+.save-btn {
+  width:100%;
+  padding:13px;
+  background:rgba(122,171,122,0.18);
+  border:1px solid rgba(122,171,122,0.35);
+  border-radius:12px;
+  color:var(--sage);
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.save-btn:hover { background:rgba(122,171,122,0.28); }
+
+/* ── CHAT ON PLANT PAGE ── */
+.plant-chat {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:20px;
+}
+.plant-chat-messages {
+  max-height:260px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-bottom:12px;
+  padding-right:4px;
+}
+.plant-chat-messages::-webkit-scrollbar { width:3px; }
+.plant-chat-messages::-webkit-scrollbar-track { background:transparent; }
+.plant-chat-messages::-webkit-scrollbar-thumb { background:rgba(122,171,122,0.25); border-radius:2px; }
+
+.chat-msg {
+  padding:10px 13px;
+  border-radius:14px;
+  font-size:13px;
+  line-height:1.55;
+}
+.chat-msg.bot {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.07);
+  color:var(--mist);
+  border-radius:4px 14px 14px 14px;
+  align-self:flex-start;
+  max-width:88%;
+}
+.chat-msg.user {
+  background:rgba(122,171,122,0.18);
+  border:1px solid rgba(122,171,122,0.28);
+  color:var(--cream);
+  border-radius:14px 4px 14px 14px;
+  align-self:flex-end;
+  max-width:88%;
+}
+
+.chat-input-area {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.chat-input-row {
+  display:flex;
+  gap:8px;
+}
+.chat-text-input {
+  flex:1;
+  background:rgba(0,0,0,0.2);
+  border:1px solid rgba(122,171,122,0.2);
+  border-radius:12px;
+  padding:10px 14px;
+  color:var(--cream);
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  outline:none;
+  resize:none;
+  min-height:42px;
+  max-height:100px;
+  transition:border-color 0.2s;
+}
+.chat-text-input:focus { border-color:rgba(122,171,122,0.45); }
+.chat-text-input::placeholder { color:rgba(200,223,200,0.3); }
+.chat-send-btn {
+  width:42px; height:42px;
+  background:var(--sage);
+  border:none;
+  border-radius:12px;
+  color:var(--forest);
+  font-size:17px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s;
+  flex-shrink:0;
+}
+.chat-send-btn:hover { background:var(--mist); }
+.chat-send-btn.loading { background:rgba(122,171,122,0.3); cursor:not-allowed; }
+
+.chat-photo-row {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.chat-photo-btn {
+  padding:7px 12px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;
+  color:var(--sage);
+  font-size:12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  position:relative;
+  overflow:hidden;
+  transition:all 0.2s;
+}
+.chat-photo-btn:hover { background:rgba(255,255,255,0.09); }
+.chat-photo-btn input[type=file] {
+  position:absolute; inset:0;
+  opacity:0; cursor:pointer;
+}
+.photo-preview-strip {
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.photo-thumb {
+  width:40px; height:40px;
+  border-radius:8px;
+  object-fit:cover;
+  border:1px solid rgba(122,171,122,0.3);
+}
+
+/* Typing indicator */
+.typing-dots {
+  display:flex;
+  gap:4px;
+  align-items:center;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.06);
+  border-radius:4px 14px 14px 14px;
+  width:fit-content;
+}
+.typing-dots span {
+  width:6px; height:6px;
+  background:var(--sage);
+  border-radius:50%;
+  animation:tdot 1.2s infinite;
+  opacity:0.7;
+}
+.typing-dots span:nth-child(2) { animation-delay:0.2s; }
+.typing-dots span:nth-child(3) { animation-delay:0.4s; }
+@keyframes tdot {
+  0%,60%,100% { transform:translateY(0); }
+  30% { transform:translateY(-5px); }
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed;
+  bottom:0; left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:430px;
+  background:linear-gradient(to top, var(--forest) 65%, transparent);
+  padding:18px 22px 28px;
+  display:flex;
+  gap:10px;
+  z-index:50;
+}
+.bn-btn {
+  flex:1;
+  padding:12px 8px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.04);
+  color:var(--sage);
+  font-family:'DM Sans',sans-serif;
+  font-size:10px;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  transition:all 0.2s;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+}
+.bn-btn .bn-icon { font-size:19px; }
+.bn-btn:hover { background:rgba(122,171,122,0.1); }
+.bn-btn.active {
+  background:rgba(122,171,122,0.14);
+  border-color:rgba(122,171,122,0.28);
+  color:var(--mist);
+}
+
+/* Toast */
+.toast {
+  position:fixed;
+  bottom:105px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#2d4a2d;
+  border:1px solid rgba(122,171,122,0.35);
+  color:var(--mist);
+  padding:11px 18px;
+  border-radius:12px;
+  font-size:13px;
+  z-index:999;
+  white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  animation:fadeUp 0.25s ease;
+}
+
+/* Schedule cards */
+.schedule-list {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:0 22px;
+}
+.sched-card {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  animation:fadeUp 0.3s ease both;
+}
+.sched-dot {
+  width:9px; height:9px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.dot-now { background:var(--alert); box-shadow:0 0 7px var(--alert); }
+.dot-soon { background:var(--amber); }
+.dot-water { background:var(--water-light); }
+.dot-ok { background:var(--sage); }
+.sched-info { flex:1; }
+.sched-plant { font-size:14px; color:var(--cream); font-weight:500; }
+.sched-task { font-size:11px; color:var(--sage); opacity:0.7; margin-top:2px; line-height:1.4; }
+.sched-when { font-size:11px; color:var(--mist); opacity:0.55; white-space:nowrap; }
+
+/* App wrapper */
+.app {
+  position:relative;
+  max-width:430px;
+  margin:0 auto;
+  height:100vh;
+  overflow:hidden;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- PIN LOCK SCREEN -->
+<div id="pinLock">
+  <div class="pin-logo">🌿</div>
+  <div class="pin-title">My <em>Garden</em></div>
+  <div class="pin-subtitle">Enter your PIN</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-keypad">
+    <div class="pin-key" onclick="pinPress('1')">1</div>
+    <div class="pin-key" onclick="pinPress('2')">2</div>
+    <div class="pin-key" onclick="pinPress('3')">3</div>
+    <div class="pin-key" onclick="pinPress('4')">4</div>
+    <div class="pin-key" onclick="pinPress('5')">5</div>
+    <div class="pin-key" onclick="pinPress('6')">6</div>
+    <div class="pin-key" onclick="pinPress('7')">7</div>
+    <div class="pin-key" onclick="pinPress('8')">8</div>
+    <div class="pin-key" onclick="pinPress('9')">9</div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinPress('0')">0</div>
+    <div class="pin-key delete" onclick="pinDelete()">⌫</div>
+  </div>
+  <div class="pin-error-msg" id="pinError">Incorrect PIN. Try again.</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE 1 — HOME
+═══════════════════════════════════════ -->
+<div class="page" id="homePage">
+  <div class="page-body">
+    <div class="home-header">
+      <div class="home-title">My <em>Garden</em></div>
+      <div class="home-date" id="homeDate"></div>
+    </div>
+
+    <!-- Stat tiles -->
+    <div class="stat-row">
+      <div class="stat-tile soil" onclick="goToPage('soilPage')">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Soil Plants</div>
+      </div>
+      <div class="stat-tile water" onclick="goToPage('waterPage')">
+        <div class="stat-num">16</div>
+        <div class="stat-label">Water Plants</div>
+      </div>
+    </div>
+
+    <!-- Alerts: In Recovery -->
+    <div class="section-label">In Recovery</div>
+    <div class="alert-scroll">
+      <div class="alert-card urgent" onclick="openPlantDetail('areca')">
+        <div class="alert-tag tag-urgent">⚠ Urgent</div>
+        <div class="alert-plant">🌴 Areca Palm</div>
+        <div class="alert-task">High pH · mold history · check moisture before watering</div>
+      </div>
+      <div class="alert-card warning" onclick="openPlantDetail('bamboo')">
+        <div class="alert-tag tag-warning">⏳ Transfer Shock</div>
+        <div class="alert-plant">🎋 Lucky Bamboo</div>
+        <div class="alert-task">Day 5 in soil · keep moist · no fertilizer yet</div>
+      </div>
+    </div>
+
+    <!-- Alerts: Check Soon -->
+    <div class="section-label" style="margin-top:8px;">Needs Attention Soon</div>
+    <div class="alert-scroll">
+      <div class="alert-card info" onclick="batchWaterAlert()">
+        <div class="alert-tag tag-info">💧 Weekly Due</div>
+        <div class="alert-plant">🫙 Bottle Forest</div>
+        <div class="alert-task">Water change + 1 drop booster for all 16 plants</div>
+      </div>
+      <div class="alert-card ok" onclick="openPlantDetail('aglaonema')">
+        <div class="alert-tag tag-ok">🌿 Monitor</div>
+        <div class="alert-plant">🌿 Red Aglaonema</div>
+        <div class="alert-task">Check in 3–4 days. Let top 50% dry first</div>
+      </div>
+      <div class="alert-card info">
+        <div class="alert-tag tag-info">🧪 pH Watch</div>
+        <div class="alert-plant">🌴 Areca Palm</div>
+        <div class="alert-task">Recheck pH in 14 days. Target: below 7.0</div>
+      </div>
+    </div>
+
+    <div style="height:30px;"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bn-btn active" id="bn-home" onclick="switchBnTab('home')">
+      <span class="bn-icon">🌿</span><span>Home</span>
+    </button>
+    <button class="bn-btn" id="bn-sched" onclick="switchBnTab('sched'); goToPage('schedPage')">
+      <span class="bn-icon">📅</span><span>Schedule</span>
+    </button>
+    <button class="bn-btn" id="bn-chat" onclick="switchBnTab('chat'); goToPage('globalChatPage')">
+      <span class="bn-icon">🤖</span><span>Ask AI</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     PAGE 2 — SOIL PLANTS LIST
+═══════════════════════════════════════ -->
+<div class="page hidden" id="soilPage">
+  <div class="topbar">
+    <div class="back-btn" onclick="goBack()">‹</div>
+    <div class="topbar-title"><em>Soil</em> Plants</div>
+  </div>
+  <div class="page-body">
+    <div class="plant-grid">
+
+      <!-- Areca Palm -->
+      <div class="plant-tile" onclick="openPlantDetail('areca')">
+        <div class="tile-status-bar bar-recovering"></div>
+        <div class="tile-inner">
+          <div class="tile-photo" id="thumb-areca" onclick="event.stopPropagation()">
+            🌴
+            <div class="upload-hint">📷</div>
+            <input type="file" accept="image/*" onchange="setTilePhoto(event,'areca')">
+          </div>
+          <div class="tile-info">
+            <div class="tile-name">Areca Palm</div>
+            <div class="tile-id">AP_01 · Blue Pot</div>
+            <div class="tile-note">Recovering · check moisture before watering</div>
+          </div>
+          <span class="tile-badge badge-recovering">Recovering</span>
+        </div>
+        <div class="tile-metrics">
+          <div class="mini-metric"><div class="mm-val" id="ap-m">7</div><div class="mm-lbl">Moisture</div></div>
+          <div class="mini-metric"><div class="mm-val" id="ap-p">7.5</div><div class="mm-lbl">pH</div></div>
+          <div class="mini-metric"><div class="mm-val" id="ap-l">Med</div><div class="mm-lbl">Light</div></div>
+        </div>
+      </div>
+
+      <!-- Red Aglaonema -->
+      <div class="plant-tile" onclick="openPlantDetail('aglaonema')">
+        <div class="tile-status-bar bar-healthy"></div>
+        <div class="tile-inner">
+          <div class="tile-photo" id="thumb-aglaonema" onclick="event.stopPropagation()">
+            🌿
+            <div class="upload-hint">📷</div>
+            <input type="file" accept="image/*" onchange="setTilePhoto(event,'aglaonema')">
+          </div>
+          <div class="tile-info">
+            <div class="tile-name">Red Aglaonema</div>
+            <div class="tile-id">AG_01 · Square Pot</div>
+            <div class="tile-note">Thriving · RO water only · check in 3–4 days</div>
+          </div>
+          <span class="tile-badge badge-healthy">Thriving</span>
+        </div>
+        <div class="tile-metrics">
+          <div class="mini-metric"><div class="mm-val" id="ag-m">4</div><div class="mm-lbl">Moisture</div></div>
+          <div class="mini-metric"><div class="mm-val" id="ag-p">6.5</div><div class="mm-lbl">pH</div></div>
+          <div class="mini-metric"><div class="mm-val" id="ag-l">Low</div><div class="mm-lbl">Light</div></div>
+        </div>
+      </div>
+
+      <!-- Lucky Bamboo Soil -->
+      <div class="plant-tile" onclick="openPlantDetail('bamboo')">
+        <div class="tile-status-bar bar-shock"></div>
+        <div class="tile-inner">
+          <div class="tile-photo" id="thumb-bamboo" onclick="event.stopPropagation()">
+            🎋
+            <div class="upload-hint">📷</div>
+            <input type="file" accept="image/*" onchange="setTilePhoto(event,'bamboo')">
+          </div>
+          <div class="tile-info">
+            <div class="tile-name">Lucky Bamboo</div>
+            <div class="tile-id">LB_01 · Yellow-Dot Pot</div>
+            <div class="tile-note">Transfer shock · day 5 · keep soil moist</div>
+          </div>
+          <span class="tile-badge badge-shock">Shock</span>
+        </div>
+        <div class="tile-metrics">
+          <div class="mini-metric"><div class="mm-val" id="lb-m">6</div><div class="mm-lbl">Moisture</div></div>
+          <div class="mini-metric"><div class="mm-val">Day 5</div><div class="mm-lbl">Transfer</div></div>
+          <div class="mini-metric"><div class="mm-val">Med</div><div class="mm-lbl">Light</div></div>
+        </div>
+      </div>
+
+    </div>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     PAGE 3 — WATER PLANTS LIST
+═══════════════════════════════════════ -->
+<div class="page hidden" id="waterPage">
+  <div class="topbar">
+    <div class="back-btn" onclick="goBack()">‹</div>
+    <div class="topbar-title"><em>Water</em> Plants</div>
+  </div>
+  <div class="page-body">
+
+    <div class="batch-bar" onclick="batchWaterAlert()">
+      💧 Batch Water Change — All 16 Plants
+    </div>
+
+    <div style="height:16px;"></div>
+    <div class="section-label">Test Tubes & Bottles</div>
+
+    <div class="water-grid">
+
+      <div class="water-tile" onclick="openPlantDetail('pothos')">
+        <div class="water-tile-photo" id="thumb-pothos" onclick="event.stopPropagation()">
+          🍃
+          <div class="upload-hint">📷</div>
+          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'pothos')">
+        </div>
+        <div class="water-tile-name">Pothos</div>
+        <div class="water-tile-sub">~10 tubes · Money Plant</div>
+      </div>
+
+      <div class="water-tile" onclick="openPlantDetail('monstera')">
+        <div class="water-tile-photo" id="thumb-monstera" onclick="event.stopPropagation()">
+          🌿
+          <div class="upload-hint">📷</div>
+          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'monstera')">
+        </div>
+        <div class="water-tile-name">Monstera</div>
+        <div class="water-tile-sub">Adansonii · Root King 👑</div>
+      </div>
+
+      <div class="water-tile" onclick="openPlantDetail('bamboo-water')">
+        <div class="water-tile-photo" id="thumb-bamboo-water" onclick="event.stopPropagation()">
+          🎋
+          <div class="upload-hint">📷</div>
+          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'bamboo-water')">
+        </div>
+        <div class="water-tile-name">Lucky Bamboo</div>
+        <div class="water-tile-sub">~4 tubes · cuttings</div>
+      </div>
+
+      <div class="water-tile" onclick="openPlantDetail('jameson')">
+        <div class="water-tile-photo" id="thumb-jameson" onclick="event.stopPropagation()">
+          🥃
+          <div class="upload-hint">📷</div>
+          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'jameson')">
+        </div>
+        <div class="water-tile-name">Jameson Bottle</div>
+        <div class="water-tile-sub">Lucky Bamboo · upgraded ✓</div>
+      </div>
+
+    </div>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     PAGE 4 — PLANT DETAIL (dynamic)
+═══════════════════════════════════════ -->
+<div class="page hidden" id="detailPage">
+  <div style="position:relative; flex-shrink:0;">
+    <!-- back button over hero -->
+    <div style="position:absolute; top:52px; left:16px; z-index:10;">
+      <div class="back-btn" onclick="goBack()">‹</div>
+    </div>
+    <div class="detail-hero" id="detailHero">
+      <span id="detailEmoji">🌴</span>
+      <img id="detailHeroImg" src="" style="display:none;">
+      <div class="detail-hero-overlay"></div>
+      <div class="detail-hero-info">
+        <div class="detail-hero-name" id="detailName">Areca Palm</div>
+        <div class="detail-hero-id" id="detailId">AP_01 · Blue Pot · Balcony</div>
+      </div>
+      <div class="upload-photo-btn" onclick="event.stopPropagation()">
+        📷 Change Photo
+        <input type="file" accept="image/*" id="detailPhotoInput" onchange="setDetailPhoto(event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="detail-body">
+
+      <!-- Metrics -->
+      <div class="detail-metrics" id="detailMetrics"></div>
+
+      <!-- Care note -->
+      <div class="detail-section-title">Current Care Note</div>
+      <div class="care-note-box" id="detailCareNote"></div>
+
+      <!-- Log Reading -->
+      <div class="detail-section-title">Log Meter Reading</div>
+      <div class="log-form">
+        <div class="meter-inputs">
+          <div class="meter-input">
+            <label>Moisture</label>
+            <input type="number" id="inp-moisture" placeholder="1–10" min="1" max="10" step="0.5">
+          </div>
+          <div class="meter-input">
+            <label>pH</label>
+            <input type="number" id="inp-ph" placeholder="5–9" min="4" max="10" step="0.5">
+          </div>
+          <div class="meter-input">
+            <label>Light</label>
+            <input type="text" id="inp-light" placeholder="Low/Med">
+          </div>
+        </div>
+        <div class="symptom-grid">
+          <div class="symptom-chip" onclick="toggleSymptom(this)">🟤 Brown Tips</div>
+          <div class="symptom-chip" onclick="toggleSymptom(this)">🌱 Thin Leaves</div>
+          <div class="symptom-chip" onclick="toggleSymptom(this)">🟡 Yellowing</div>
+          <div class="symptom-chip" onclick="toggleSymptom(this)">🍄 Mold on Soil</div>
+          <div class="symptom-chip" onclick="toggleSymptom(this)">💧 Drooping</div>
+          <div class="symptom-chip" onclick="toggleSymptom(this)">⬜ Mineral Crust</div>
+        </div>
+        <div class="diagnosis-box" id="diagBox" style="display:none;">
+          <div class="diag-title">⚡ Diagnosis</div>
+          <div class="diag-text" id="diagText"></div>
+        </div>
+        <button class="save-btn" onclick="saveReading()">Save Reading</button>
+      </div>
+
+      <!-- Plant Chat -->
+      <div class="detail-section-title">Ask About This Plant</div>
+      <div class="plant-chat">
+        <div class="plant-chat-messages" id="plantChatMessages"></div>
+        <div class="chat-input-area">
+          <div class="chat-input-row">
+            <textarea class="chat-text-input" id="plantChatInput" placeholder="How is my plant doing? What should I do?" rows="1"
+              onkeydown="handleChatKey(event)"
+              oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'"></textarea>
+            <button class="chat-send-btn" id="plantSendBtn" onclick="sendPlantChat()">↑</button>
+          </div>
+          <div class="chat-photo-row">
+            <div class="chat-photo-btn">
+              📷 Add Photo
+              <input type="file" accept="image/*" multiple onchange="addChatPhoto(event)">
+            </div>
+            <div class="photo-preview-strip" id="chatPhotoStrip"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     PAGE 5 — SCHEDULE
+═══════════════════════════════════════ -->
+<div class="page hidden" id="schedPage">
+  <div class="topbar">
+    <div class="back-btn" onclick="goBack(); switchBnTab('home')">‹</div>
+    <div class="topbar-title"><em>Schedule</em></div>
+  </div>
+  <div class="page-body">
+    <div class="schedule-list">
+      <div class="sched-card" style="animation-delay:0.04s"><div class="sched-dot dot-now"></div><div class="sched-info"><div class="sched-plant">Areca Palm · AP_01</div><div class="sched-task">Check moisture. Water only when reading hits 4–5. Use RO + ¼ tsp Epsom Salt</div></div><div class="sched-when">Today</div></div>
+      <div class="sched-card" style="animation-delay:0.08s"><div class="sched-dot dot-water"></div><div class="sched-info"><div class="sched-plant">Bottle Forest · All 16</div><div class="sched-task">Weekly water change + 1 drop booster per tube, 3 drops in Jameson bottle</div></div><div class="sched-when">Sunday</div></div>
+      <div class="sched-card" style="animation-delay:0.12s"><div class="sched-dot dot-soon"></div><div class="sched-info"><div class="sched-plant">Red Aglaonema · AG_01</div><div class="sched-task">Check soil moisture. Plain RO water when top 50% is dry</div></div><div class="sched-when">3–4 days</div></div>
+      <div class="sched-card" style="animation-delay:0.16s"><div class="sched-dot dot-soon"></div><div class="sched-info"><div class="sched-plant">Lucky Bamboo · LB_01</div><div class="sched-task">End of acclimation window. Check root firmness & new growth</div></div><div class="sched-when">5 days</div></div>
+      <div class="sched-card" style="animation-delay:0.2s"><div class="sched-dot dot-ok"></div><div class="sched-info"><div class="sched-plant">Areca Palm · pH Recheck</div><div class="sched-task">Target pH below 7.0. Neem cake should start acidifying</div></div><div class="sched-when">14 days</div></div>
+      <div class="sched-card" style="animation-delay:0.24s"><div class="sched-dot dot-water"></div><div class="sched-info"><div class="sched-plant">Monstera Adansonii</div><div class="sched-task">Root King — plan transfer to larger glass bottle when ready</div></div><div class="sched-when">Upcoming</div></div>
+    </div>
+    <div style="height:30px;"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="bn-btn" id="bn2-home" onclick="switchBnTab('home'); goToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
+    <button class="bn-btn active" id="bn2-sched" onclick="switchBnTab('sched')"><span class="bn-icon">📅</span><span>Schedule</span></button>
+    <button class="bn-btn" id="bn2-chat" onclick="switchBnTab('chat'); goToPage('globalChatPage')"><span class="bn-icon">🤖</span><span>Ask AI</span></button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     PAGE 6 — GLOBAL AI CHAT
+═══════════════════════════════════════ -->
+<div class="page hidden" id="globalChatPage">
+  <div class="topbar">
+    <div class="back-btn" onclick="goBack(); switchBnTab('home')">‹</div>
+    <div class="topbar-title"><em>Ask</em> AI</div>
+  </div>
+  <div class="page-body" style="display:flex; flex-direction:column; padding-bottom:0;">
+    <div style="flex:1; overflow-y:auto; padding:0 22px 12px; display:flex; flex-direction:column; gap:10px;" id="globalChatMessages">
+      <div class="chat-msg bot">Hi! I know your full plant collection — Areca diva, the Aglaonema, Lucky Bamboo in transfer shock, and all 16 water babies. What's happening today? 🌿</div>
+    </div>
+    <div style="padding:12px 22px 100px; flex-shrink:0;">
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea class="chat-text-input" id="globalChatInput" placeholder="Ask anything about your plants..." rows="1"
+            onkeydown="handleGlobalKey(event)"
+            oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="chat-send-btn" id="globalSendBtn" onclick="sendGlobalChat()">↑</button>
+        </div>
+        <div class="chat-photo-row">
+          <div class="chat-photo-btn">
+            📷 Add Photo
+            <input type="file" accept="image/*" multiple onchange="addGlobalChatPhoto(event)">
+          </div>
+          <div class="photo-preview-strip" id="globalPhotoStrip"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="bn-btn" id="bn3-home" onclick="switchBnTab('home'); goToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
+    <button class="bn-btn" id="bn3-sched" onclick="switchBnTab('sched'); goToPage('schedPage')"><span class="bn-icon">📅</span><span>Schedule</span></button>
+    <button class="bn-btn active" id="bn3-chat"><span class="bn-icon">🤖</span><span>Ask AI</span></button>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<script>
+// ── DATA ──
+const plantData = {
+  areca: {
+    name:'Areca Palm', id:'AP_01', loc:'Blue Pot · Balcony',
+    emoji:'🌴', moisture:7, ph:7.5, light:'Med',
+    status:'Recovering',
+    care:`<strong>Do not overwater.</strong> Wait until moisture hits 4–5 before watering. Use RO water + ¼ tsp Epsom Salt to bypass alkalinity. Rotate pot 90° daily. Keep on balcony mornings for airflow. Watch for mold — apply Neem powder if white fuzz appears. Target pH: 6.0–6.5.`,
+    metricsType:'soil'
+  },
+  aglaonema: {
+    name:'Red Aglaonema', id:'AG_01', loc:'Square Pot · Indoor',
+    emoji:'🌿', moisture:4, ph:6.5, light:'Low',
+    status:'Thriving',
+    care:`Healthiest plant in the collection. Use <strong>plain RO water only</strong> — no Epsom salt unless leaves go pale. Let top 50% of soil dry before watering. Keep away from direct sun. Wipe leaves with damp cloth to clear dust and improve photosynthesis.`,
+    metricsType:'soil'
+  },
+  bamboo: {
+    name:'Lucky Bamboo', id:'LB_01', loc:'Yellow-Dot Pot · Window',
+    emoji:'🎋', moisture:6, ph:7.0, light:'Med',
+    status:'Transfer Shock',
+    care:`Recently transferred from water tube to soil. <strong>Keep soil consistently moist</strong> for 5 more days — water-grown roots cannot search for water yet. Snip yellowed lower leaves. <strong>No fertilizer for 14 days.</strong> Bright indirect light near teal curtains. Check root firmness in 5 days.`,
+    metricsType:'soil'
+  },
+  pothos: {
+    name:'Pothos / Money Plant', id:'PROP_01', loc:'Test Tubes · Wall Rack',
+    emoji:'🍃', moisture:'—', ph:'—', light:'Indirect',
+    status:'Growing',
+    care:`Change RO water weekly. Add <strong>1 drop booster</strong> per tube during water change. If roots are circling the bottom twice, time to transfer to a bigger vessel or soil. Watch for green algae — clean tubes with a bottle brush if spotted.`,
+    metricsType:'water'
+  },
+  monstera: {
+    name:'Monstera Adansonii', id:'MA_01', loc:'Test Tube · Wall Rack',
+    emoji:'🌿', moisture:'—', ph:'—', light:'Indirect',
+    status:'Root King 👑',
+    care:`Most elaborate root system in the collection. <strong>Next step:</strong> plan transfer to a larger tinted glass bottle. Roots are thick with white feeder hairs — ready when you are. Keep 1 drop booster in tube weekly. Will eventually want a moss stick to climb.`,
+    metricsType:'water'
+  },
+  'bamboo-water': {
+    name:'Lucky Bamboo Cuttings', id:'PROP_LB', loc:'Test Tubes · Wall Rack',
+    emoji:'🎋', moisture:'—', ph:'—', light:'Low',
+    status:'Growing',
+    care:`Change RO water weekly. Keep out of direct sunlight — will yellow fast. Add 2 drops bamboo booster per tube. If tips brown, switch to filtered water. These are candidates for the larger Jameson-style bottle upgrade.`,
+    metricsType:'water'
+  },
+  jameson: {
+    name:'Lucky Bamboo — Jameson', id:'LB_JAM', loc:'Tinted Bottle · Upgraded',
+    emoji:'🥃', moisture:'—', ph:'—', light:'Low',
+    status:'Upgraded ✓',
+    care:`Tinted glass filters light from roots — excellent environment. Add <strong>2–3 drops booster</strong> per water change (more volume = more nutrients). Change water every 7–10 days. The dark glass helps prevent algae. Top up with RO water as it evaporates.`,
+    metricsType:'water'
+  }
+};
+
+// ── NAVIGATION ──
+const pageStack = ['homePage'];
+let currentPlantKey = null;
+let chatPendingPhotos = [];
+let globalChatPendingPhotos = [];
+
+function goToPage(pageId) {
+  const current = pageStack[pageStack.length - 1];
+  if (current === pageId) return;
+  document.getElementById(current).classList.add('slide-left');
+  document.getElementById(pageId).classList.remove('hidden');
+  pageStack.push(pageId);
+}
+
+function goBack() {
+  if (pageStack.length <= 1) return;
+  const current = pageStack.pop();
+  const prev = pageStack[pageStack.length - 1];
+  document.getElementById(current).classList.add('hidden');
+  document.getElementById(current).classList.remove('slide-left');
+  const prevEl = document.getElementById(prev);
+  prevEl.classList.remove('hidden');
+  prevEl.classList.remove('slide-left');
+}
+
+function openPlantDetail(key) {
+  currentPlantKey = key;
+  const p = plantData[key];
+
+  document.getElementById('detailEmoji').textContent = p.emoji;
+  document.getElementById('detailName').textContent = p.name;
+  document.getElementById('detailId').textContent = p.id + ' · ' + p.loc;
+
+  // Restore saved hero photo if any
+  const savedImg = localStorage.getItem('photo-hero-' + key);
+  const heroImg = document.getElementById('detailHeroImg');
+  if (savedImg) { heroImg.src = savedImg; heroImg.style.display = 'block'; document.getElementById('detailEmoji').style.display = 'none'; }
+  else { heroImg.style.display = 'none'; document.getElementById('detailEmoji').style.display = 'block'; }
+
+  // Metrics
+  const metricsEl = document.getElementById('detailMetrics');
+  if (p.metricsType === 'soil') {
+    metricsEl.innerHTML = `
+      <div class="detail-metric"><div class="dm-icon">💧</div><div class="dm-val" id="dm-moisture">${p.moisture}</div><div class="dm-lbl">Moisture</div></div>
+      <div class="detail-metric"><div class="dm-icon">🧪</div><div class="dm-val" id="dm-ph">${p.ph}</div><div class="dm-lbl">pH</div></div>
+      <div class="detail-metric"><div class="dm-icon">☀️</div><div class="dm-val" id="dm-light">${p.light}</div><div class="dm-lbl">Light</div></div>`;
+  } else {
+    metricsEl.innerHTML = `
+      <div class="detail-metric"><div class="dm-icon">💧</div><div class="dm-val">Weekly</div><div class="dm-lbl">Water Change</div></div>
+      <div class="detail-metric"><div class="dm-icon">🌱</div><div class="dm-val">RO</div><div class="dm-lbl">Water Type</div></div>
+      <div class="detail-metric"><div class="dm-icon">💊</div><div class="dm-val">1 drop</div><div class="dm-lbl">Booster</div></div>`;
+  }
+
+  document.getElementById('detailCareNote').innerHTML = p.care;
+
+  // Reset form
+  document.getElementById('inp-moisture').value = '';
+  document.getElementById('inp-ph').value = '';
+  document.getElementById('inp-light').value = '';
+  document.getElementById('diagBox').style.display = 'none';
+  document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
+
+  // Reset chat for this plant
+  const chatEl = document.getElementById('plantChatMessages');
+  chatEl.innerHTML = `<div class="chat-msg bot">I'm here to help with your ${p.name}. You can ask me anything or upload a photo for a check-up 🌿</div>`;
+  document.getElementById('chatPhotoStrip').innerHTML = '';
+  chatPendingPhotos = [];
+
+  goToPage('detailPage');
+}
+
+// ── PHOTOS ──
+function setTilePhoto(event, key) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const thumb = document.getElementById('thumb-' + key);
+    let img = thumb.querySelector('img');
+    if (!img) { img = document.createElement('img'); thumb.appendChild(img); }
+    img.src = e.target.result;
+    thumb.querySelector('span, .tile-photo-emoji')?.remove();
+    const emoji = thumb.childNodes[0];
+    if (emoji && emoji.nodeType === 3) thumb.childNodes[0].textContent = '';
+    // hide default emoji text
+    thumb.style.fontSize = '0';
+    localStorage.setItem('photo-thumb-' + key, e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function setWaterTilePhoto(event, key) {
+  setTilePhoto(event, key);
+}
+
+function setDetailPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const heroImg = document.getElementById('detailHeroImg');
+    heroImg.src = e.target.result;
+    heroImg.style.display = 'block';
+    document.getElementById('detailEmoji').style.display = 'none';
+    if (currentPlantKey) {
+      localStorage.setItem('photo-hero-' + currentPlantKey, e.target.result);
+      // Also update tile thumbnail
+      const thumb = document.getElementById('thumb-' + currentPlantKey);
+      if (thumb) {
+        let img = thumb.querySelector('img');
+        if (!img) { img = document.createElement('img'); thumb.appendChild(img); }
+        img.src = e.target.result;
+        thumb.style.fontSize = '0';
+        localStorage.setItem('photo-thumb-' + currentPlantKey, e.target.result);
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// Restore saved thumbnails on load
+window.addEventListener('load', () => {
+  const keys = ['areca','aglaonema','bamboo','pothos','monstera','bamboo-water','jameson'];
+  keys.forEach(key => {
+    const saved = localStorage.getItem('photo-thumb-' + key);
+    if (saved) {
+      const thumb = document.getElementById('thumb-' + key);
+      if (thumb) {
+        let img = thumb.querySelector('img');
+        if (!img) { img = document.createElement('img'); thumb.appendChild(img); }
+        img.src = saved;
+        thumb.style.fontSize = '0';
+      }
+    }
+  });
+  // Set today's date
+  const now = new Date();
+  document.getElementById('homeDate').textContent = now.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+});
+
+// ── DIAGNOSIS ──
+function toggleSymptom(el) {
+  el.classList.toggle('selected');
+  updateDiagnosis();
+}
+
+function updateDiagnosis() {
+  const selected = [...document.querySelectorAll('.symptom-chip.selected')].map(c => c.textContent.trim());
+  if (!selected.length) { document.getElementById('diagBox').style.display = 'none'; return; }
+  const ph = parseFloat(document.getElementById('inp-ph').value) || (currentPlantKey ? plantData[currentPlantKey]?.ph : 7);
+  const moisture = parseFloat(document.getElementById('inp-moisture').value);
+  let d = '';
+  if (selected.some(s => s.includes('Thin'))) d += '💊 <strong>Magnesium deficiency</strong> — 1 tsp Epsom Salt in 1L RO water on next watering.<br>';
+  if (selected.some(s => s.includes('Brown'))) d += '💧 <strong>Mineral sensitivity / low humidity</strong> — RO water only. Trim tips in V-shape with clean shears.<br>';
+  if (selected.some(s => s.includes('Yellow'))) {
+    if (moisture > 7) d += '🚨 <strong>Overwatering</strong> — Move to balcony. No water until moisture reads 4–5.<br>';
+    else d += '🟡 <strong>Nutrient deficiency or transfer shock</strong> — Normal if recently transferred. Do not fertilize yet.<br>';
+  }
+  if (selected.some(s => s.includes('Mold'))) d += '🍄 <strong>Fungal growth</strong> — Scrape top 1cm, apply Neem cake, move to balcony. Stop misting immediately.<br>';
+  if (selected.some(s => s.includes('Drooping'))) d += '📉 <strong>Root stress</strong> — Squeeze base: firm = stressed, mushy = rotting (snip it). Rotate pot 180°.<br>';
+  if (selected.some(s => s.includes('Mineral'))) d += '⬜ <strong>Salt buildup</strong> — Scrape top 1cm, replace with fresh Ugaoo mix. RO water only going forward.<br>';
+  if (ph > 7.2) d += `⚗️ <strong>High pH (${ph}) = Nutrient Lockout</strong> — ¼ tsp Epsom Salt in RO water bypasses alkalinity. Neem cake lowers pH over 2 weeks.<br>`;
+  if (d) { document.getElementById('diagBox').style.display = 'block'; document.getElementById('diagText').innerHTML = d; }
+}
+
+document.getElementById('inp-ph').addEventListener('input', updateDiagnosis);
+document.getElementById('inp-moisture').addEventListener('input', updateDiagnosis);
+
+function saveReading() {
+  if (!currentPlantKey) return;
+  const m = document.getElementById('inp-moisture').value;
+  const p = document.getElementById('inp-ph').value;
+  const l = document.getElementById('inp-light').value;
+  if (m) {
+    plantData[currentPlantKey].moisture = parseFloat(m);
+    const el = document.getElementById('dm-moisture');
+    if (el) el.textContent = parseFloat(m).toFixed(1);
+    const shortKey = currentPlantKey === 'areca' ? 'ap' : currentPlantKey === 'aglaonema' ? 'ag' : 'lb';
+    const tileEl = document.getElementById(shortKey + '-m');
+    if (tileEl) tileEl.textContent = parseFloat(m).toFixed(1);
+  }
+  if (p) { plantData[currentPlantKey].ph = parseFloat(p); const el = document.getElementById('dm-ph'); if(el) el.textContent = parseFloat(p).toFixed(1); }
+  if (l) { plantData[currentPlantKey].light = l; const el = document.getElementById('dm-light'); if(el) el.textContent = l; }
+  document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('diagBox').style.display = 'none';
+  showToast('Reading saved ✓');
+}
+
+// ── AI SYSTEM PROMPT ──
+const SYSTEM = `You are a personal plant care assistant for Inov, based in Mumbai, India. You know their entire plant collection:
+
+SOIL PLANTS:
+- Areca Palm (AP_01, blue pot, balcony) — recovering from root rot, mold, high pH (7–8), magnesium deficiency. Treatments: Ugaoo potting mix, Epsom salt, Sea Secret (IFFCO), Neem cake powder. Never overwater. Target moisture 4–5 before watering.
+- Red Aglaonema (AG_01, square pot, indoor) — healthiest plant. Had mineral crust, now refreshed. Plain RO water only. Let top 50% dry before watering.
+- Lucky Bamboo (LB_01, yellow-dotted pot, near window) — recently transferred from test tube to soil. In transfer shock, yellowing lower leaves are normal. Keep soil moist. No fertilizer for 14 days.
+
+WATER PLANTS (~16 total):
+- ~10 Pothos/Money Plant test tubes
+- Monstera Adansonii "Root King" — most elaborate roots, candidate for large bottle upgrade
+- ~4 Lucky Bamboo cuttings in test tubes
+- Lucky Bamboo in Jameson tinted bottle (upgraded)
+Weekly: RO water change + 1 drop booster per tube, 2–3 drops in Jameson bottle.
+
+KEY RULES:
+- Always RO water (Mumbai tap has fluoride/chlorine issues)
+- Epsom salt for magnesium (1 tsp per 1L RO water, or ¼ tsp for palm maintenance)
+- Neem cake: antifungal + slow pH reducer
+- Sea Secret (IFFCO seaweed) as general tonic
+- Moisture meter: water Areca at 4–5, Aglaonema at 3, keep Bamboo moist during acclimation
+- Areca target pH: 6.0–6.5 (currently 7–8, too alkaline)
+- Never mist when mold present or moisture is high
+- Coriander: decided not to grow
+- Aglaonema cutting propagation: not started yet
+
+If a photo is attached, describe what you observe and give specific advice. Be warm, specific, concise for mobile. Reference plants by name and ID.`;
+
+// ── PLANT CHAT ──
+let plantChatHistory = [];
+
+function addChatPhoto(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      chatPendingPhotos.push(e.target.result);
+      const strip = document.getElementById('chatPhotoStrip');
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'photo-thumb';
+      strip.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function sendPlantChat() {
+  const input = document.getElementById('plantChatInput');
+  const text = input.value.trim();
+  if (!text && !chatPendingPhotos.length) return;
+
+  const btn = document.getElementById('plantSendBtn');
+  btn.classList.add('loading'); btn.textContent = '…';
+
+  const displayText = text || '📷 Photo sent';
+  appendPlantMsg(displayText, 'user');
+  input.value = ''; input.style.height = 'auto';
+
+  const typing = addTyping('plantChatMessages');
+
+  // Build message content
+  const content = [];
+  chatPendingPhotos.forEach(b64 => {
+    const mimeMatch = b64.match(/data:([^;]+);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    content.push({ type:'image', source:{ type:'base64', media_type:mime, data:b64.split(',')[1] } });
+  });
+  if (text) content.push({ type:'text', text: `[Regarding my ${plantData[currentPlantKey]?.name || 'plant'}] ${text}` });
+  else content.push({ type:'text', text:`[Regarding my ${plantData[currentPlantKey]?.name || 'plant'}] Please check this photo.` });
+
+  chatPendingPhotos = [];
+  document.getElementById('chatPhotoStrip').innerHTML = '';
+
+  plantChatHistory.push({ role:'user', content });
+
+  try {
+    const res = await fetch('https://ready-leigha-thetarkalab-c90f529e.koyeb.app/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:plantChatHistory })
+    });
+    const data = await res.json();
+    typing.remove();
+    const reply = data.content?.[0]?.text || 'Sorry, try again.';
+    plantChatHistory.push({ role:'assistant', content:reply });
+    appendPlantMsg(reply, 'bot');
+  } catch(e) {
+    typing.remove();
+    appendPlantMsg('Connection issue. Try again.', 'bot');
+  }
+  btn.classList.remove('loading'); btn.textContent = '↑';
+}
+
+function appendPlantMsg(text, role) {
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + role;
+  el.textContent = text;
+  const container = document.getElementById('plantChatMessages');
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPlantChat(); }
+}
+
+// ── GLOBAL CHAT ──
+let globalChatHistory = [];
+let globalPendingPhotos = [];
+
+function addGlobalChatPhoto(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      globalPendingPhotos.push(e.target.result);
+      const strip = document.getElementById('globalPhotoStrip');
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'photo-thumb';
+      strip.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function sendGlobalChat() {
+  const input = document.getElementById('globalChatInput');
+  const text = input.value.trim();
+  if (!text && !globalPendingPhotos.length) return;
+
+  const btn = document.getElementById('globalSendBtn');
+  btn.classList.add('loading'); btn.textContent = '…';
+
+  const displayText = text || '📷 Photo sent';
+  appendGlobalMsg(displayText, 'user');
+  input.value = ''; input.style.height = 'auto';
+
+  const typing = addTyping('globalChatMessages');
+
+  const content = [];
+  globalPendingPhotos.forEach(b64 => {
+    const mimeMatch = b64.match(/data:([^;]+);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    content.push({ type:'image', source:{ type:'base64', media_type:mime, data:b64.split(',')[1] } });
+  });
+  if (text) content.push({ type:'text', text });
+  else content.push({ type:'text', text:'Please check this photo of my plant.' });
+
+  globalPendingPhotos = [];
+  document.getElementById('globalPhotoStrip').innerHTML = '';
+
+  globalChatHistory.push({ role:'user', content });
+
+  try {
+    const res = await fetch('https://ready-leigha-thetarkalab-c90f529e.koyeb.app/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:globalChatHistory })
+    });
+    const data = await res.json();
+    typing.remove();
+    const reply = data.content?.[0]?.text || 'Sorry, try again.';
+    globalChatHistory.push({ role:'assistant', content:reply });
+    appendGlobalMsg(reply, 'bot');
+  } catch(e) {
+    typing.remove();
+    appendGlobalMsg('Connection issue. Try again.', 'bot');
+  }
+  btn.classList.remove('loading'); btn.textContent = '↑';
+}
+
+function appendGlobalMsg(text, role) {
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + role;
+  el.textContent = text;
+  const container = document.getElementById('globalChatMessages');
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+function handleGlobalKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGlobalChat(); }
+}
+
+// ── HELPERS ──
+function addTyping(containerId) {
+  const t = document.createElement('div');
+  t.className = 'typing-dots';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  const c = document.getElementById(containerId);
+  c.appendChild(t);
+  c.scrollTop = c.scrollHeight;
+  return t;
+}
+
+function switchBnTab(tab) {
+  ['bn-home','bn-sched','bn-chat','bn2-home','bn2-sched','bn2-chat','bn3-home','bn3-sched','bn3-chat'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  [`bn-${tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : 'chat'}`,
+   `bn2-${tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : 'chat'}`,
+   `bn3-${tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : 'chat'}`].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  });
+}
+
+function batchWaterAlert() {
+  showToast('💧 Water change logged for all 16 plants!');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+// ── PIN LOCK ──
+const CORRECT_PIN = '1234'; // ← Change this to your 4-digit PIN
+let pinEntry = '';
+let pinLocked = true;
+
+if (sessionStorage.getItem('garden_unlocked') === 'yes') {
+  document.getElementById('pinLock').style.display = 'none';
+  pinLocked = false;
+}
+
+function pinPress(digit) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += digit;
+  updatePinDots();
+  if (pinEntry.length === 4) setTimeout(checkPin, 120);
+}
+
+function pinDelete() {
+  if (!pinEntry.length) return;
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pinError').classList.remove('show');
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.toggle('filled', i < pinEntry.length);
+    dot.classList.remove('error');
+  }
+}
+
+function checkPin() {
+  if (pinEntry === CORRECT_PIN) {
+    const lock = document.getElementById('pinLock');
+    lock.style.transition = 'opacity 0.4s ease';
+    lock.style.opacity = '0';
+    setTimeout(() => { lock.style.display = 'none'; }, 400);
+    sessionStorage.setItem('garden_unlocked', 'yes');
+    pinLocked = false;
+  } else {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('pd' + i);
+      dot.classList.remove('filled');
+      dot.classList.add('error');
+    }
+    document.getElementById('pinError').classList.add('show');
+    setTimeout(() => {
+      for (let i = 0; i < 4; i++) document.getElementById('pd' + i).classList.remove('error');
+      pinEntry = '';
+    }, 600);
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (pinLocked) {
+    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+    if (e.key === 'Backspace') pinDelete();
+  }
+});
+</script>
+</body>
+</html>
