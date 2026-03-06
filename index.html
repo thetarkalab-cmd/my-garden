@@ -1075,11 +1075,11 @@ body::before {
     <!-- Stat tiles -->
     <div class="stat-row">
       <div class="stat-tile soil" onclick="goToPage('soilPage')">
-        <div class="stat-num">3</div>
+        <div class="stat-num" id="count-soil">3</div>
         <div class="stat-label">Soil Plants</div>
       </div>
-      <div class="stat-tile water" onclick="goToPage('waterPage')">
-        <div class="stat-num">16</div>
+      <div class="stat-tile water" onclick="goToPage('waterPage')" style="position:relative">
+        <div class="stat-num" id="count-water">—</div>
         <div class="stat-label">Water Plants</div>
       </div>
     </div>
@@ -1320,6 +1320,10 @@ body::before {
       <!-- Care note -->
       <div class="detail-section-title">Current Care Note</div>
       <div class="care-note-box" id="detailCareNote"></div>
+      <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button class="save-btn" style="flex:1;" onclick="quickWater()">💧 Mark Watered</button>
+        <button class="save-btn" style="flex:1; background:rgba(201,135,74,0.12); border-color:rgba(201,135,74,0.3); color:var(--amber);" onclick="quickTransfer()">📦 Log Transfer</button>
+      </div>
 
       <!-- Log Reading -->
       <div class="detail-section-title">Log Meter Reading</div>
@@ -1622,6 +1626,7 @@ function setDetailPhoto(event) {
 
 // Restore saved thumbnails on load
 window.addEventListener('load', () => {
+  loadCounts();
   const keys = ['areca','aglaonema','bamboo','pothos','monstera','bamboo-water','jameson'];
   keys.forEach(key => {
     const saved = localStorage.getItem('photo-thumb-' + key);
@@ -1683,6 +1688,10 @@ function saveReading() {
   }
   if (p) { plantData[currentPlantKey].ph = parseFloat(p); const el = document.getElementById('dm-ph'); if(el) el.textContent = parseFloat(p).toFixed(1); }
   if (l) { plantData[currentPlantKey].light = l; const el = document.getElementById('dm-light'); if(el) el.textContent = l; }
+  // Log to Supabase
+  const plantIdMap = { areca:'AP_01', aglaonema:'AG_01', bamboo:'LB_01', pothos:'PROP_01', monstera:'MA_01', 'bamboo-water':'PROP_LB', jameson:'LB_JAM' };
+  const pid = plantIdMap[currentPlantKey];
+  if (pid) logReading(pid, m ? parseFloat(m) : null, p ? parseFloat(p) : null, l || null, null);
   document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
   document.getElementById('diagBox').style.display = 'none';
   showToast('Reading saved ✓');
@@ -1768,7 +1777,7 @@ async function sendPlantChat() {
     const res = await fetch('https://ready-leigha-thetarkalab-c90f529e.koyeb.app/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:plantChatHistory })
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:plantChatHistory, plantId:currentPlantKey })
     });
     const data = await res.json();
     typing.remove();
@@ -1847,7 +1856,7 @@ async function sendGlobalChat() {
     const res = await fetch('https://ready-leigha-thetarkalab-c90f529e.koyeb.app/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:globalChatHistory })
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:globalChatHistory, plantId:null })
     });
     const data = await res.json();
     typing.remove();
@@ -1899,7 +1908,9 @@ function switchBnTab(tab) {
 }
 
 function batchWaterAlert() {
-  showToast('💧 Water change logged for all 16 plants!');
+  const waterPlants = ['PROP_01', 'MA_01', 'PROP_LB', 'LB_JAM'];
+  waterPlants.forEach(pid => logCare(pid, 'watered', null, 'batch water change'));
+  showToast('💧 Water change logged for all plants!');
 }
 
 function showToast(msg) {
@@ -1908,6 +1919,105 @@ function showToast(msg) {
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2800);
+}
+
+
+
+// ── QUICK ACTIONS ON DETAIL PAGE ──
+const plantIdMap = { areca:'AP_01', aglaonema:'AG_01', bamboo:'LB_01', pothos:'PROP_01', monstera:'MA_01', 'bamboo-water':'PROP_LB', jameson:'LB_JAM' };
+const containerMap = { areca:'soil', aglaonema:'soil', bamboo:'soil', pothos:'test_tube', monstera:'test_tube', 'bamboo-water':'test_tube', jameson:'bottle' };
+
+async function quickWater() {
+  if (!currentPlantKey) return;
+  const pid = plantIdMap[currentPlantKey];
+  if (!pid) return;
+  // Check for supplement
+  const supp = prompt('Any supplement added?\n1. None (plain water)\n2. Epsom Salt\n3. Neem Cake\n4. Sea Secret\n5. Booster Drop\n\nEnter number (or press Cancel):');
+  const suppMap = {'1': null, '2': 'epsom_salt', '3': 'neem_cake', '4': 'sea_secret', '5': 'booster_drop'};
+  const careType = suppMap[supp] || 'watered';
+  await logCare(pid, careType, null, null);
+  if (supp && supp !== '1') await logCare(pid, 'watered', null, null);
+}
+
+function quickTransfer() {
+  if (!currentPlantKey) return;
+  const pid = plantIdMap[currentPlantKey];
+  const current = containerMap[currentPlantKey] || 'test_tube';
+  if (!pid) return;
+  openTransferModal(pid, current);
+}
+
+// ── PROXY URL ──
+const PROXY_URL = 'https://ready-leigha-thetarkalab-c90f529e.koyeb.app';
+
+// ── LOAD LIVE COUNTS ──
+async function loadCounts() {
+  try {
+    const res = await fetch(PROXY_URL + '/counts');
+    const data = await res.json();
+    const soilEl = document.getElementById('count-soil');
+    const waterEl = document.getElementById('count-water');
+    if (soilEl) soilEl.textContent = data.soil;
+    if (waterEl) waterEl.textContent = (data.bottle || 0) + (data.tube || 0);
+  } catch(e) { console.log('Count load failed', e); }
+}
+
+// ── LOG CARE EVENT ──
+async function logCare(plantId, careType, quantity, notes) {
+  try {
+    await fetch(PROXY_URL + '/log/care', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ plant_id: plantId, care_type: careType, quantity, notes })
+    });
+    showToast('✓ Logged: ' + careType);
+  } catch(e) { showToast('Log failed'); }
+}
+
+// ── LOG METER READING ──
+async function logReading(plantId, moisture, ph, light, notes) {
+  try {
+    await fetch(PROXY_URL + '/log/reading', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ plant_id: plantId, moisture, ph, light, notes })
+    });
+  } catch(e) { console.log('Reading log failed', e); }
+}
+
+// ── LOG TRANSFER ──
+async function logTransfer(plantId, fromContainer, toContainer, notes) {
+  try {
+    await fetch(PROXY_URL + '/log/transfer', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ plant_id: plantId, from_container: fromContainer, to_container: toContainer, notes })
+    });
+    showToast('✓ Transfer logged!');
+    await loadCounts();
+  } catch(e) { showToast('Transfer log failed'); }
+}
+
+// ── WATERED BUTTON ──
+async function markWatered(plantId, supplement) {
+  await logCare(plantId, supplement || 'watered', null, null);
+}
+
+// ── TRANSFER MODAL ──
+function openTransferModal(plantId, currentContainer) {
+  const containers = ['soil', 'bottle', 'test_tube'];
+  const options = containers.filter(c => c !== currentContainer);
+  const choice = prompt(
+    'Transfer ' + plantId + ' to:\n' +
+    options.map((o, i) => (i+1) + '. ' + o.replace('_', ' ')).join('\n') +
+    '\n\nEnter number:'
+  );
+  if (!choice) return;
+  const idx = parseInt(choice) - 1;
+  if (idx >= 0 && idx < options.length) {
+    const notes = prompt('Any notes? (optional)') || '';
+    logTransfer(plantId, currentContainer, options[idx], notes);
+  }
 }
 
 // ── PIN LOCK ──
