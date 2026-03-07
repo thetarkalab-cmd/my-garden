@@ -1370,8 +1370,8 @@ body::before {
           </div>
           <div class="chat-photo-row">
             <div class="chat-photo-btn">
-              📷 Add Photo
-              <input type="file" accept="image/*" multiple onchange="addChatPhoto(event)">
+              📷 Camera
+              <input type="file" accept="image/*" capture="environment" multiple onchange="addChatPhoto(event)">
             </div>
             <div class="photo-preview-strip" id="chatPhotoStrip"></div>
           </div>
@@ -1434,7 +1434,7 @@ body::before {
         <div class="chat-photo-row">
           <div class="chat-photo-btn">
             📷 Add Photo
-            <input type="file" accept="image/*" multiple onchange="addGlobalChatPhoto(event)">
+            <input type="file" accept="image/*" capture="environment" multiple onchange="addGlobalChatPhoto(event)">
           </div>
           <div class="photo-preview-strip" id="globalPhotoStrip"></div>
         </div>
