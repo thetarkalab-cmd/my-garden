@@ -1513,7 +1513,7 @@ const plantData = {
 };
 
 // ── NAVIGATION ──
-const pageStack = ['homePage'];
+let pageStack = ['homePage'];
 let currentPlantKey = null;
 let chatPendingPhotos = [];
 let globalChatPendingPhotos = [];
@@ -1521,21 +1521,26 @@ let globalChatPendingPhotos = [];
 function goToPage(pageId) {
   const current = pageStack[pageStack.length - 1];
   if (current === pageId) return;
-  document.getElementById(current).classList.add('slide-left');
-  document.getElementById(pageId).classList.remove('hidden');
+  // Hide current page
+  const currentEl = document.getElementById(current);
+  currentEl.classList.add('hidden');
+  currentEl.classList.remove('slide-left');
+  // Show new page
+  const targetEl = document.getElementById(pageId);
+  targetEl.classList.remove('hidden');
+  targetEl.classList.remove('slide-left');
   pageStack.push(pageId);
 }
 
 function resetToPage(pageId) {
+  // Hide all pages cleanly
   document.querySelectorAll('.page').forEach(p => {
-    if (p.id !== pageId) {
-      p.classList.add('hidden');
-      p.classList.remove('slide-left');
-    }
+    p.classList.add('hidden');
+    p.classList.remove('slide-left');
   });
+  // Show only target
   const target = document.getElementById(pageId);
   target.classList.remove('hidden');
-  target.classList.remove('slide-left');
   pageStack = [pageId];
 }
 
@@ -1543,8 +1548,11 @@ function goBack() {
   if (pageStack.length <= 1) return;
   const current = pageStack.pop();
   const prev = pageStack[pageStack.length - 1];
-  document.getElementById(current).classList.add('hidden');
-  document.getElementById(current).classList.remove('slide-left');
+  // Hide current
+  const currentEl = document.getElementById(current);
+  currentEl.classList.add('hidden');
+  currentEl.classList.remove('slide-left');
+  // Show previous
   const prevEl = document.getElementById(prev);
   prevEl.classList.remove('hidden');
   prevEl.classList.remove('slide-left');
