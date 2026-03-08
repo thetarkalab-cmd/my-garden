@@ -1736,20 +1736,40 @@ If a photo is attached, describe what you observe and give specific advice. Be w
 // ── PLANT CHAT ──
 let plantChatHistory = [];
 
+function resizePhoto(file, callback) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1024;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function addChatPhoto(event) {
   const files = Array.from(event.target.files);
   files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      chatPendingPhotos.push(e.target.result);
+    resizePhoto(file, b64 => {
+      chatPendingPhotos.push(b64);
       const strip = document.getElementById('chatPhotoStrip');
       const img = document.createElement('img');
-      img.src = e.target.result;
+      img.src = b64;
       img.className = 'photo-thumb';
       strip.appendChild(img);
-    };
-    reader.readAsDataURL(file);
+    });
   });
+  event.target.value = '';
 }
 
 async function sendPlantChat() {
@@ -1789,9 +1809,14 @@ async function sendPlantChat() {
     });
     const data = await res.json();
     typing.remove();
-    const reply = data.content?.[0]?.text || 'Sorry, try again.';
-    plantChatHistory.push({ role:'assistant', content:reply });
-    appendPlantMsg(reply, 'bot');
+    if (!res.ok) {
+      console.error('Chat error:', data);
+      appendPlantMsg('Error: ' + (data.error || JSON.stringify(data)), 'bot');
+    } else {
+      const reply = data.content?.[0]?.text || 'No response received.';
+      plantChatHistory.push({ role:'assistant', content:reply });
+      appendPlantMsg(reply, 'bot');
+    }
   } catch(e) {
     typing.remove();
     appendPlantMsg('Connection issue. Try again.', 'bot');
@@ -1819,17 +1844,16 @@ let globalPendingPhotos = [];
 function addGlobalChatPhoto(event) {
   const files = Array.from(event.target.files);
   files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      globalPendingPhotos.push(e.target.result);
+    resizePhoto(file, b64 => {
+      globalPendingPhotos.push(b64);
       const strip = document.getElementById('globalPhotoStrip');
       const img = document.createElement('img');
-      img.src = e.target.result;
+      img.src = b64;
       img.className = 'photo-thumb';
       strip.appendChild(img);
-    };
-    reader.readAsDataURL(file);
+    });
   });
+  event.target.value = '';
 }
 
 async function sendGlobalChat() {
@@ -1868,9 +1892,14 @@ async function sendGlobalChat() {
     });
     const data = await res.json();
     typing.remove();
-    const reply = data.content?.[0]?.text || 'Sorry, try again.';
-    globalChatHistory.push({ role:'assistant', content:reply });
-    appendGlobalMsg(reply, 'bot');
+    if (!res.ok) {
+      console.error('Chat error:', data);
+      appendGlobalMsg('Error: ' + (data.error || JSON.stringify(data)), 'bot');
+    } else {
+      const reply = data.content?.[0]?.text || 'No response received.';
+      globalChatHistory.push({ role:'assistant', content:reply });
+      appendGlobalMsg(reply, 'bot');
+    }
   } catch(e) {
     typing.remove();
     appendGlobalMsg('Connection issue. Try again.', 'bot');
