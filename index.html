@@ -1393,7 +1393,7 @@ body::before {
 ═══════════════════════════════════════ -->
 <div class="page hidden" id="schedPage">
   <div class="topbar">
-    <div class="back-btn" onclick="goBack(); switchBnTab('home')">‹</div>
+    <div class="back-btn" onclick="resetToPage('homePage'); switchBnTab('home')">‹</div>
     <div class="topbar-title"><em>Schedule</em></div>
   </div>
   <div class="page-body">
@@ -1408,7 +1408,7 @@ body::before {
     <div style="height:30px;"></div>
   </div>
   <div class="bottom-nav">
-    <button class="bn-btn" id="bn2-home" onclick="switchBnTab('home'); goToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
+    <button class="bn-btn" id="bn2-home" onclick="switchBnTab('home'); resetToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
     <button class="bn-btn active" id="bn2-sched" onclick="switchBnTab('sched')"><span class="bn-icon">📅</span><span>Schedule</span></button>
     <button class="bn-btn" id="bn2-chat" onclick="switchBnTab('chat'); goToPage('globalChatPage')"><span class="bn-icon">🤖</span><span>Ask AI</span></button>
   </div>
@@ -1420,7 +1420,7 @@ body::before {
 ═══════════════════════════════════════ -->
 <div class="page hidden" id="globalChatPage">
   <div class="topbar">
-    <div class="back-btn" onclick="goBack(); switchBnTab('home')">‹</div>
+    <div class="back-btn" onclick="resetToPage('homePage'); switchBnTab('home')">‹</div>
     <div class="topbar-title"><em>Ask</em> AI</div>
   </div>
   <div class="page-body" style="display:flex; flex-direction:column; padding-bottom:0;">
@@ -1450,7 +1450,7 @@ body::before {
     </div>
   </div>
   <div class="bottom-nav">
-    <button class="bn-btn" id="bn3-home" onclick="switchBnTab('home'); goToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
+    <button class="bn-btn" id="bn3-home" onclick="switchBnTab('home'); resetToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
     <button class="bn-btn" id="bn3-sched" onclick="switchBnTab('sched'); goToPage('schedPage')"><span class="bn-icon">📅</span><span>Schedule</span></button>
     <button class="bn-btn active" id="bn3-chat"><span class="bn-icon">🤖</span><span>Ask AI</span></button>
   </div>
@@ -1524,6 +1524,19 @@ function goToPage(pageId) {
   document.getElementById(current).classList.add('slide-left');
   document.getElementById(pageId).classList.remove('hidden');
   pageStack.push(pageId);
+}
+
+function resetToPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => {
+    if (p.id !== pageId) {
+      p.classList.add('hidden');
+      p.classList.remove('slide-left');
+    }
+  });
+  const target = document.getElementById(pageId);
+  target.classList.remove('hidden');
+  target.classList.remove('slide-left');
+  pageStack = [pageId];
 }
 
 function goBack() {
