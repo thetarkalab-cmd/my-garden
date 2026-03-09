@@ -1248,7 +1248,7 @@ body::before {
           <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'pothos')">
         </div>
         <div class="water-tile-name">Pothos</div>
-        <div class="water-tile-sub">~10 tubes · Money Plant</div>
+        <div class="water-tile-sub">The Source Chardonnay · Upgraded ✓</div>
       </div>
 
       <div class="water-tile" onclick="openPlantDetail('monstera')">
@@ -1258,7 +1258,7 @@ body::before {
           <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'monstera')">
         </div>
         <div class="water-tile-name">Monstera</div>
-        <div class="water-tile-sub">Adansonii · Root King 👑</div>
+        <div class="water-tile-sub">Glass Tumbler · Upgraded ✓</div>
       </div>
 
       <div class="water-tile" onclick="openPlantDetail('bamboo-water')">
@@ -1267,8 +1267,8 @@ body::before {
           <div class="upload-hint">📷</div>
           <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'bamboo-water')">
         </div>
-        <div class="water-tile-name">Lucky Bamboo</div>
-        <div class="water-tile-sub">~4 tubes · cuttings</div>
+        <div class="water-tile-name">Lucky Bamboo Cuttings</div>
+        <div class="water-tile-sub">The Source Sauvignon · Upgraded ✓</div>
       </div>
 
       <div class="water-tile" onclick="openPlantDetail('jameson')">
@@ -1483,24 +1483,24 @@ const plantData = {
     metricsType:'soil'
   },
   pothos: {
-    name:'Pothos / Money Plant', id:'PROP_01', loc:'Test Tubes · Wall Rack',
+    name:'Pothos / Money Plant', id:'PROP_01', loc:'The Source Chardonnay Bottle',
     emoji:'🍃', moisture:'—', ph:'—', light:'Indirect',
-    status:'Growing',
-    care:`Change RO water weekly. Add <strong>1 drop booster</strong> per tube during water change. If roots are circling the bottom twice, time to transfer to a bigger vessel or soil. Watch for green algae — clean tubes with a bottle brush if spotted.`,
+    status:'Upgraded ✓',
+    care:`Now in The Source Chardonnay wine bottle. Change RO water every 7–10 days. Add <strong>2–3 drops booster</strong> per water change (more volume = more nutrients). Watch for green algae on the glass — rinse bottle if spotted. When roots fill the bottle, consider moving to soil.`,
     metricsType:'water'
   },
   monstera: {
-    name:'Monstera Adansonii', id:'MA_01', loc:'Test Tube · Wall Rack',
+    name:'Monstera Adansonii', id:'MA_01', loc:'Glass Tumbler · Upgraded',
     emoji:'🌿', moisture:'—', ph:'—', light:'Indirect',
     status:'Root King 👑',
-    care:`Most elaborate root system in the collection. <strong>Next step:</strong> plan transfer to a larger tinted glass bottle. Roots are thick with white feeder hairs — ready when you are. Keep 1 drop booster in tube weekly. Will eventually want a moss stick to climb.`,
+    care:`Now in a glass tumbler. Change RO water every 7–10 days. Add <strong>2–3 drops booster</strong> per water change. Roots are elaborate — consider moving to a tinted bottle for algae control. Will eventually want a moss stick to climb once transferred to soil.`,
     metricsType:'water'
   },
   'bamboo-water': {
-    name:'Lucky Bamboo Cuttings', id:'PROP_LB', loc:'Test Tubes · Wall Rack',
+    name:'Lucky Bamboo Cuttings', id:'PROP_LB', loc:'The Source Sauvignon Blanc Bottle',
     emoji:'🎋', moisture:'—', ph:'—', light:'Low',
-    status:'Growing',
-    care:`Change RO water weekly. Keep out of direct sunlight — will yellow fast. Add 2 drops bamboo booster per tube. If tips brown, switch to filtered water. These are candidates for the larger Jameson-style bottle upgrade.`,
+    status:'Upgraded ✓',
+    care:`Now in The Source Sauvignon Blanc wine bottle. Change RO water every 7–10 days. Keep out of direct sunlight — will yellow fast. Add <strong>2–3 drops booster</strong> per water change. If tips brown, switch to filtered water. Still have 7 cuttings remaining in test tubes on the wall rack.`,
     metricsType:'water'
   },
   jameson: {
