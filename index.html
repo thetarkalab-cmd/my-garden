@@ -45,6 +45,21 @@ body::before {
   z-index:0;
 }
 
+
+/* Loading message */
+.loading-msg {
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.5;
+  font-size: 14px;
+  grid-column: 1 / -1;
+}
+/* Admin modal input focus */
+#plantModal input:focus, #plantModal textarea:focus, #plantModal select:focus {
+  outline: none;
+  border-color: var(--sage);
+}
+
 /* ── PIN LOCK ── */
 #pinLock {
   position:fixed;
@@ -1132,6 +1147,9 @@ body::before {
     <button class="bn-btn" id="bn-chat" onclick="switchBnTab('chat'); goToPage('globalChatPage')">
       <span class="bn-icon">🤖</span><span>Ask AI</span>
     </button>
+    <button class="bn-btn" id="bn-admin" onclick="switchBnTab('admin'); goToPage('adminPage'); renderAdminPlants()">
+      <span class="bn-icon">⚙️</span><span>Plants</span>
+    </button>
   </div>
 </div>
 
@@ -1145,77 +1163,8 @@ body::before {
     <div class="topbar-title"><em>Soil</em> Plants</div>
   </div>
   <div class="page-body">
-    <div class="plant-grid">
-
-      <!-- Areca Palm -->
-      <div class="plant-tile" onclick="openPlantDetail('areca')">
-        <div class="tile-status-bar bar-recovering"></div>
-        <div class="tile-inner">
-          <div class="tile-photo" id="thumb-areca" onclick="event.stopPropagation()">
-            🌴
-            <div class="upload-hint">📷</div>
-            <input type="file" accept="image/*" onchange="setTilePhoto(event,'areca')">
-          </div>
-          <div class="tile-info">
-            <div class="tile-name">Areca Palm</div>
-            <div class="tile-id">AP_01 · Blue Pot</div>
-            <div class="tile-note">Recovering · check moisture before watering</div>
-          </div>
-          <span class="tile-badge badge-recovering">Recovering</span>
-        </div>
-        <div class="tile-metrics">
-          <div class="mini-metric"><div class="mm-val" id="ap-m">7</div><div class="mm-lbl">Moisture</div></div>
-          <div class="mini-metric"><div class="mm-val" id="ap-p">7.5</div><div class="mm-lbl">pH</div></div>
-          <div class="mini-metric"><div class="mm-val" id="ap-l">Med</div><div class="mm-lbl">Light</div></div>
-        </div>
-      </div>
-
-      <!-- Red Aglaonema -->
-      <div class="plant-tile" onclick="openPlantDetail('aglaonema')">
-        <div class="tile-status-bar bar-healthy"></div>
-        <div class="tile-inner">
-          <div class="tile-photo" id="thumb-aglaonema" onclick="event.stopPropagation()">
-            🌿
-            <div class="upload-hint">📷</div>
-            <input type="file" accept="image/*" onchange="setTilePhoto(event,'aglaonema')">
-          </div>
-          <div class="tile-info">
-            <div class="tile-name">Red Aglaonema</div>
-            <div class="tile-id">AG_01 · Square Pot</div>
-            <div class="tile-note">Thriving · RO water only · check in 3–4 days</div>
-          </div>
-          <span class="tile-badge badge-healthy">Thriving</span>
-        </div>
-        <div class="tile-metrics">
-          <div class="mini-metric"><div class="mm-val" id="ag-m">4</div><div class="mm-lbl">Moisture</div></div>
-          <div class="mini-metric"><div class="mm-val" id="ag-p">6.5</div><div class="mm-lbl">pH</div></div>
-          <div class="mini-metric"><div class="mm-val" id="ag-l">Low</div><div class="mm-lbl">Light</div></div>
-        </div>
-      </div>
-
-      <!-- Lucky Bamboo Soil -->
-      <div class="plant-tile" onclick="openPlantDetail('bamboo')">
-        <div class="tile-status-bar bar-shock"></div>
-        <div class="tile-inner">
-          <div class="tile-photo" id="thumb-bamboo" onclick="event.stopPropagation()">
-            🎋
-            <div class="upload-hint">📷</div>
-            <input type="file" accept="image/*" onchange="setTilePhoto(event,'bamboo')">
-          </div>
-          <div class="tile-info">
-            <div class="tile-name">Lucky Bamboo</div>
-            <div class="tile-id">LB_01 · Yellow-Dot Pot</div>
-            <div class="tile-note">Transfer shock · day 5 · keep soil moist</div>
-          </div>
-          <span class="tile-badge badge-shock">Shock</span>
-        </div>
-        <div class="tile-metrics">
-          <div class="mini-metric"><div class="mm-val" id="lb-m">6</div><div class="mm-lbl">Moisture</div></div>
-          <div class="mini-metric"><div class="mm-val">Day 5</div><div class="mm-lbl">Transfer</div></div>
-          <div class="mini-metric"><div class="mm-val">Med</div><div class="mm-lbl">Light</div></div>
-        </div>
-      </div>
-
+    <div class="plant-grid" id="soilGrid">
+      <div class="loading-msg">Loading plants…</div>
     </div>
     <div style="height:30px;"></div>
   </div>
@@ -1231,56 +1180,13 @@ body::before {
     <div class="topbar-title"><em>Water</em> Plants</div>
   </div>
   <div class="page-body">
-
     <div class="batch-bar" onclick="batchWaterAlert()">
-      💧 Batch Water Change — All 16 Plants
+      💧 Batch Water Change — All Plants
     </div>
-
     <div style="height:16px;"></div>
-    <div class="section-label">Test Tubes & Bottles</div>
-
-    <div class="water-grid">
-
-      <div class="water-tile" onclick="openPlantDetail('pothos')">
-        <div class="water-tile-photo" id="thumb-pothos" onclick="event.stopPropagation()">
-          🍃
-          <div class="upload-hint">📷</div>
-          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'pothos')">
-        </div>
-        <div class="water-tile-name">Pothos</div>
-        <div class="water-tile-sub">The Source Chardonnay · Upgraded ✓</div>
-      </div>
-
-      <div class="water-tile" onclick="openPlantDetail('monstera')">
-        <div class="water-tile-photo" id="thumb-monstera" onclick="event.stopPropagation()">
-          🌿
-          <div class="upload-hint">📷</div>
-          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'monstera')">
-        </div>
-        <div class="water-tile-name">Monstera</div>
-        <div class="water-tile-sub">Glass Tumbler · Upgraded ✓</div>
-      </div>
-
-      <div class="water-tile" onclick="openPlantDetail('bamboo-water')">
-        <div class="water-tile-photo" id="thumb-bamboo-water" onclick="event.stopPropagation()">
-          🎋
-          <div class="upload-hint">📷</div>
-          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'bamboo-water')">
-        </div>
-        <div class="water-tile-name">Lucky Bamboo Cuttings</div>
-        <div class="water-tile-sub">The Source Sauvignon · Upgraded ✓</div>
-      </div>
-
-      <div class="water-tile" onclick="openPlantDetail('jameson')">
-        <div class="water-tile-photo" id="thumb-jameson" onclick="event.stopPropagation()">
-          🥃
-          <div class="upload-hint">📷</div>
-          <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'jameson')">
-        </div>
-        <div class="water-tile-name">Jameson Bottle</div>
-        <div class="water-tile-sub">Lucky Bamboo · upgraded ✓</div>
-      </div>
-
+    <div class="section-label">Bottles & Test Tubes</div>
+    <div class="water-grid" id="waterGrid">
+      <div class="loading-msg">Loading plants…</div>
     </div>
     <div style="height:30px;"></div>
   </div>
@@ -1411,6 +1317,7 @@ body::before {
     <button class="bn-btn" id="bn2-home" onclick="switchBnTab('home'); resetToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
     <button class="bn-btn active" id="bn2-sched" onclick="switchBnTab('sched')"><span class="bn-icon">📅</span><span>Schedule</span></button>
     <button class="bn-btn" id="bn2-chat" onclick="switchBnTab('chat'); goToPage('globalChatPage')"><span class="bn-icon">🤖</span><span>Ask AI</span></button>
+    <button class="bn-btn" id="bn2-admin" onclick="switchBnTab('admin'); goToPage('adminPage'); renderAdminPlants()"><span class="bn-icon">⚙️</span><span>Plants</span></button>
   </div>
 </div>
 
@@ -1453,66 +1360,118 @@ body::before {
     <button class="bn-btn" id="bn3-home" onclick="switchBnTab('home'); resetToPage('homePage')"><span class="bn-icon">🌿</span><span>Home</span></button>
     <button class="bn-btn" id="bn3-sched" onclick="switchBnTab('sched'); goToPage('schedPage')"><span class="bn-icon">📅</span><span>Schedule</span></button>
     <button class="bn-btn active" id="bn3-chat"><span class="bn-icon">🤖</span><span>Ask AI</span></button>
+    <button class="bn-btn" id="bn3-admin" onclick="switchBnTab('admin'); goToPage('adminPage'); renderAdminPlants()"><span class="bn-icon">⚙️</span><span>Plants</span></button>
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════
+     PAGE 7 — MY PLANTS (Admin)
+═══════════════════════════════════════ -->
+<div class="page hidden" id="adminPage">
+  <div class="topbar">
+    <div class="back-btn" onclick="resetToPage('homePage'); switchBnTab('home')">‹</div>
+    <div class="topbar-title">🌿 My Plants</div>
+    <button onclick="showAddPlantModal()" style="background:none;border:none;color:var(--sage);font-size:22px;cursor:pointer;padding:4px 8px;">＋</button>
+  </div>
+  <div class="page-body">
+    <div id="adminPlantList" style="padding:0 16px;">
+      <div class="loading-msg">Loading…</div>
+    </div>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+<!-- Add/Edit Plant Modal -->
+<div id="plantModal" style="display:none; position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.7); align-items:flex-end;">
+  <div style="background:var(--moss); border-radius:20px 20px 0 0; padding:24px 20px 40px; width:100%; max-height:85vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div style="font-family:'Cormorant Garamond',serif; font-size:20px;" id="modalTitle">Add Plant</div>
+      <button onclick="closePlantModal()" style="background:none;border:none;color:var(--cream);font-size:24px;cursor:pointer;">×</button>
+    </div>
+    <input type="hidden" id="modal-plant-id">
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">PLANT ID (e.g. AP_01)</label>
+        <input id="modal-id" placeholder="e.g. NEW_01" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">NAME</label>
+        <input id="modal-name" placeholder="e.g. Monstera Deliciosa" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">EMOJI</label>
+        <input id="modal-emoji" placeholder="🌿" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:20px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">CONTAINER</label>
+        <select id="modal-container" style="width:100%; background:var(--moss); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px;">
+          <option value="soil">🪴 Soil</option>
+          <option value="bottle">🍶 Bottle</option>
+          <option value="test_tube">🧪 Test Tube</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">LOCATION / VESSEL</label>
+        <input id="modal-location" placeholder="e.g. Blue Pot · Balcony" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">STATUS</label>
+        <input id="modal-status" placeholder="e.g. Thriving / Recovering / Growing" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">QUANTITY (for test tubes)</label>
+        <input id="modal-qty" type="number" value="1" min="1" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:var(--sage); display:block; margin-bottom:4px;">CARE NOTES</label>
+        <textarea id="modal-care" rows="4" placeholder="Care instructions…" style="width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px 14px; color:var(--cream); font-size:14px; resize:none;"></textarea>
+      </div>
+    </div>
+    <button onclick="savePlantModal()" style="margin-top:20px; width:100%; background:var(--leaf); border:none; border-radius:12px; padding:14px; color:var(--cream); font-size:15px; cursor:pointer; font-family:'DM Sans',sans-serif;">Save Plant</button>
+    <button id="deletePlantBtn" onclick="deletePlantModal()" style="margin-top:10px; width:100%; background:rgba(184,50,50,0.2); border:1px solid rgba(184,50,50,0.4); border-radius:12px; padding:14px; color:#e07070; font-size:15px; cursor:pointer; font-family:'DM Sans',sans-serif; display:none;">Delete Plant</button>
+  </div>
+</div>
 </div><!-- end .app -->
 
 <script>
-// ── DATA ──
-const plantData = {
-  areca: {
-    name:'Areca Palm', id:'AP_01', loc:'Blue Pot · Balcony',
-    emoji:'🌴', moisture:7, ph:7.5, light:'Med',
-    status:'Recovering',
-    care:`<strong>Do not overwater.</strong> Wait until moisture hits 4–5 before watering. Use RO water + ¼ tsp Epsom Salt to bypass alkalinity. Rotate pot 90° daily. Keep on balcony mornings for airflow. Watch for mold — apply Neem powder if white fuzz appears. Target pH: 6.0–6.5.`,
-    metricsType:'soil'
-  },
-  aglaonema: {
-    name:'Red Aglaonema', id:'AG_01', loc:'Square Pot · Indoor',
-    emoji:'🌿', moisture:4, ph:6.5, light:'Low',
-    status:'Thriving',
-    care:`Healthiest plant in the collection. Use <strong>plain RO water only</strong> — no Epsom salt unless leaves go pale. Let top 50% of soil dry before watering. Keep away from direct sun. Wipe leaves with damp cloth to clear dust and improve photosynthesis.`,
-    metricsType:'soil'
-  },
-  bamboo: {
-    name:'Lucky Bamboo', id:'LB_01', loc:'Yellow-Dot Pot · Window',
-    emoji:'🎋', moisture:6, ph:7.0, light:'Med',
-    status:'Transfer Shock',
-    care:`Recently transferred from water tube to soil. <strong>Keep soil consistently moist</strong> for 5 more days — water-grown roots cannot search for water yet. Snip yellowed lower leaves. <strong>No fertilizer for 14 days.</strong> Bright indirect light near teal curtains. Check root firmness in 5 days.`,
-    metricsType:'soil'
-  },
-  pothos: {
-    name:'Pothos / Money Plant', id:'PROP_01', loc:'The Source Chardonnay Bottle',
-    emoji:'🍃', moisture:'—', ph:'—', light:'Indirect',
-    status:'Upgraded ✓',
-    care:`Now in The Source Chardonnay wine bottle. Change RO water every 7–10 days. Add <strong>2–3 drops booster</strong> per water change (more volume = more nutrients). Watch for green algae on the glass — rinse bottle if spotted. When roots fill the bottle, consider moving to soil.`,
-    metricsType:'water'
-  },
-  monstera: {
-    name:'Monstera Adansonii', id:'MA_01', loc:'Glass Tumbler · Upgraded',
-    emoji:'🌿', moisture:'—', ph:'—', light:'Indirect',
-    status:'Root King 👑',
-    care:`Now in a glass tumbler. Change RO water every 7–10 days. Add <strong>2–3 drops booster</strong> per water change. Roots are elaborate — consider moving to a tinted bottle for algae control. Will eventually want a moss stick to climb once transferred to soil.`,
-    metricsType:'water'
-  },
-  'bamboo-water': {
-    name:'Lucky Bamboo Cuttings', id:'PROP_LB', loc:'The Source Sauvignon Blanc Bottle',
-    emoji:'🎋', moisture:'—', ph:'—', light:'Low',
-    status:'Upgraded ✓',
-    care:`Now in The Source Sauvignon Blanc wine bottle. Change RO water every 7–10 days. Keep out of direct sunlight — will yellow fast. Add <strong>2–3 drops booster</strong> per water change. If tips brown, switch to filtered water. Still have 7 cuttings remaining in test tubes on the wall rack.`,
-    metricsType:'water'
-  },
-  jameson: {
-    name:'Lucky Bamboo — Jameson', id:'LB_JAM', loc:'Tinted Bottle · Upgraded',
-    emoji:'🥃', moisture:'—', ph:'—', light:'Low',
-    status:'Upgraded ✓',
-    care:`Tinted glass filters light from roots — excellent environment. Add <strong>2–3 drops booster</strong> per water change (more volume = more nutrients). Change water every 7–10 days. The dark glass helps prevent algae. Top up with RO water as it evaporates.`,
-    metricsType:'water'
+// ── PLANT STORE (loaded from Supabase via proxy) ──
+let allPlants = []; // array of plant objects from DB
+
+async function loadPlants() {
+  try {
+    const res = await fetch(PROXY_URL + '/plants');
+    allPlants = await res.json();
+  } catch(e) {
+    console.error('Failed to load plants:', e);
+    allPlants = [];
   }
-};
+}
+
+// Helper: get plant by DB id (e.g. 'AP_01')
+function getPlantById(id) {
+  return allPlants.find(p => p.id === id);
+}
+
+// Helper: get plant by slug key (used for backward compat with alert card onclick)
+// Slug = id lowercased with underscores/dashes normalized, or by name match
+function getPlantByKey(key) {
+  // Try direct id match first
+  let p = allPlants.find(p => p.id === key);
+  if (p) return p;
+  // Try slug: key like 'areca' -> find by name contains
+  const slugMap = {
+    'areca': 'AP_01', 'aglaonema': 'AG_01', 'bamboo': 'LB_01',
+    'pothos': 'PROP_01', 'monstera': 'MA_01', 'bamboo-water': 'PROP_LB',
+    'jameson': 'LB_JAM', 'prop_tt': 'PROP_TT'
+  };
+  const mappedId = slugMap[key];
+  if (mappedId) return allPlants.find(p => p.id === mappedId);
+  return null;
+}
 
 // ── NAVIGATION ──
+
 let pageStack = ['homePage'];
 let currentPlantKey = null;
 let chatPendingPhotos = [];
@@ -1560,11 +1519,12 @@ function goBack() {
 
 function openPlantDetail(key) {
   currentPlantKey = key;
-  const p = plantData[key];
+  const p = getPlantByKey(key);
+  if (!p) { console.error('Plant not found:', key); return; }
 
-  document.getElementById('detailEmoji').textContent = p.emoji;
+  document.getElementById('detailEmoji').textContent = p.emoji || '🌿';
   document.getElementById('detailName').textContent = p.name;
-  document.getElementById('detailId').textContent = p.id + ' · ' + p.loc;
+  document.getElementById('detailId').textContent = p.id + ' · ' + (p.location || '');
 
   // Restore saved hero photo if any
   const savedImg = localStorage.getItem('photo-hero-' + key);
@@ -1574,11 +1534,11 @@ function openPlantDetail(key) {
 
   // Metrics
   const metricsEl = document.getElementById('detailMetrics');
-  if (p.metricsType === 'soil') {
+  if ((p.metrics_type || p.metricsType) === 'soil') {
     metricsEl.innerHTML = `
-      <div class="detail-metric"><div class="dm-icon">💧</div><div class="dm-val" id="dm-moisture">${p.moisture}</div><div class="dm-lbl">Moisture</div></div>
-      <div class="detail-metric"><div class="dm-icon">🧪</div><div class="dm-val" id="dm-ph">${p.ph}</div><div class="dm-lbl">pH</div></div>
-      <div class="detail-metric"><div class="dm-icon">☀️</div><div class="dm-val" id="dm-light">${p.light}</div><div class="dm-lbl">Light</div></div>`;
+      <div class="detail-metric"><div class="dm-icon">💧</div><div class="dm-val" id="dm-moisture">—</div><div class="dm-lbl">Moisture</div></div>
+      <div class="detail-metric"><div class="dm-icon">🧪</div><div class="dm-val" id="dm-ph">—</div><div class="dm-lbl">pH</div></div>
+      <div class="detail-metric"><div class="dm-icon">☀️</div><div class="dm-val" id="dm-light">${p.location ? p.location.split('·')[1]?.trim() || '—' : '—'}</div><div class="dm-lbl">Light</div></div>`;
   } else {
     metricsEl.innerHTML = `
       <div class="detail-metric"><div class="dm-icon">💧</div><div class="dm-val">Weekly</div><div class="dm-lbl">Water Change</div></div>
@@ -1586,7 +1546,7 @@ function openPlantDetail(key) {
       <div class="detail-metric"><div class="dm-icon">💊</div><div class="dm-val">1 drop</div><div class="dm-lbl">Booster</div></div>`;
   }
 
-  document.getElementById('detailCareNote').innerHTML = p.care;
+  document.getElementById('detailCareNote').innerHTML = p.care_notes || '';
 
   // Reset form
   document.getElementById('inp-moisture').value = '';
@@ -1597,7 +1557,7 @@ function openPlantDetail(key) {
 
   // Reset chat for this plant
   const chatEl = document.getElementById('plantChatMessages');
-  chatEl.innerHTML = `<div class="chat-msg bot">I'm here to help with your ${p.name}. You can ask me anything or upload a photo for a check-up 🌿</div>`;
+  chatEl.innerHTML = `<div class="chat-msg bot">I'm here to help with your ${p.name || 'plant'}. You can ask me anything or upload a photo for a check-up 🌿</div>`;
   document.getElementById('chatPhotoStrip').innerHTML = '';
   chatPendingPhotos = [];
 
@@ -1654,24 +1614,16 @@ function setDetailPhoto(event) {
 }
 
 // Restore saved thumbnails on load
-window.addEventListener('load', () => {
-  loadCounts();
-  const keys = ['areca','aglaonema','bamboo','pothos','monstera','bamboo-water','jameson'];
-  keys.forEach(key => {
-    const saved = localStorage.getItem('photo-thumb-' + key);
-    if (saved) {
-      const thumb = document.getElementById('thumb-' + key);
-      if (thumb) {
-        let img = thumb.querySelector('img');
-        if (!img) { img = document.createElement('img'); thumb.appendChild(img); }
-        img.src = saved;
-        thumb.style.fontSize = '0';
-      }
-    }
-  });
+window.addEventListener('load', async () => {
   // Set today's date
   const now = new Date();
   document.getElementById('homeDate').textContent = now.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  // Load all plants from Supabase, then render pages
+  await loadPlants();
+  loadCounts();
+  renderSoilPage();
+  renderWaterPage();
 });
 
 // ── DIAGNOSIS ──
@@ -1683,7 +1635,7 @@ function toggleSymptom(el) {
 function updateDiagnosis() {
   const selected = [...document.querySelectorAll('.symptom-chip.selected')].map(c => c.textContent.trim());
   if (!selected.length) { document.getElementById('diagBox').style.display = 'none'; return; }
-  const ph = parseFloat(document.getElementById('inp-ph').value) || (currentPlantKey ? plantData[currentPlantKey]?.ph : 7);
+  const ph = parseFloat(document.getElementById('inp-ph').value) || 7;
   const moisture = parseFloat(document.getElementById('inp-moisture').value);
   let d = '';
   if (selected.some(s => s.includes('Thin'))) d += '💊 <strong>Magnesium deficiency</strong> — 1 tsp Epsom Salt in 1L RO water on next watering.<br>';
@@ -1708,18 +1660,17 @@ function saveReading() {
   const p = document.getElementById('inp-ph').value;
   const l = document.getElementById('inp-light').value;
   if (m) {
-    plantData[currentPlantKey].moisture = parseFloat(m);
+    const _cp = getPlantByKey(currentPlantKey); if(_cp) _cp._moisture = parseFloat(m);
     const el = document.getElementById('dm-moisture');
     if (el) el.textContent = parseFloat(m).toFixed(1);
     const shortKey = currentPlantKey === 'areca' ? 'ap' : currentPlantKey === 'aglaonema' ? 'ag' : 'lb';
     const tileEl = document.getElementById(shortKey + '-m');
     if (tileEl) tileEl.textContent = parseFloat(m).toFixed(1);
   }
-  if (p) { plantData[currentPlantKey].ph = parseFloat(p); const el = document.getElementById('dm-ph'); if(el) el.textContent = parseFloat(p).toFixed(1); }
-  if (l) { plantData[currentPlantKey].light = l; const el = document.getElementById('dm-light'); if(el) el.textContent = l; }
+  if (p) { const _cp = getPlantByKey(currentPlantKey); if(_cp) _cp._ph = parseFloat(p); const el = document.getElementById('dm-ph'); if(el) el.textContent = parseFloat(p).toFixed(1); }
+  if (l) { const _cp = getPlantByKey(currentPlantKey); if(_cp) _cp._light = l; const el = document.getElementById('dm-light'); if(el) el.textContent = l; }
   // Log to Supabase
-  const plantIdMap = { areca:'AP_01', aglaonema:'AG_01', bamboo:'LB_01', pothos:'PROP_01', monstera:'MA_01', 'bamboo-water':'PROP_LB', jameson:'LB_JAM' };
-  const pid = plantIdMap[currentPlantKey];
+  const pid = currentPlantKey ? getPlantId(currentPlantKey) : null;
   if (pid) logReading(pid, m ? parseFloat(m) : null, p ? parseFloat(p) : null, l || null, null);
   document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
   document.getElementById('diagBox').style.display = 'none';
@@ -1727,32 +1678,48 @@ function saveReading() {
 }
 
 // ── AI SYSTEM PROMPT ──
-const SYSTEM = `You are a personal plant care assistant for Inov, based in Mumbai, India. You know their entire plant collection:
+function buildSystemPrompt() {
+  const soilList = allPlants.filter(p => p.container_type === 'soil')
+    .map(p => `- ${p.name} (${p.id}, ${p.location || 'unknown'}) — Status: ${p.status || 'unknown'}. ${p.care_notes || ''}`)
+    .join('\n');
+  const waterList = allPlants.filter(p => p.container_type !== 'soil')
+    .map(p => `- ${p.name} (${p.id}, ${p.location || 'unknown'}) — ${p.container_type}${p.quantity > 1 ? ', qty: ' + p.quantity : ''}. ${p.care_notes || ''}`)
+    .join('\n');
+
+  return `You are a personal plant care assistant for Inov, based in Mumbai, India.
+
+CURRENT PLANT COLLECTION (live from database):
 
 SOIL PLANTS:
-- Areca Palm (AP_01, blue pot, balcony) — recovering from root rot, mold, high pH (7–8), magnesium deficiency. Treatments: Ugaoo potting mix, Epsom salt, Sea Secret (IFFCO), Neem cake powder. Never overwater. Target moisture 4–5 before watering.
-- Red Aglaonema (AG_01, square pot, indoor) — healthiest plant. Had mineral crust, now refreshed. Plain RO water only. Let top 50% dry before watering.
-- Lucky Bamboo (LB_01, yellow-dotted pot, near window) — recently transferred from test tube to soil. In transfer shock, yellowing lower leaves are normal. Keep soil moist. No fertilizer for 14 days.
+${soilList || 'None yet.'}
 
-WATER PLANTS (~16 total):
-- ~10 Pothos/Money Plant test tubes
-- Monstera Adansonii "Root King" — most elaborate roots, candidate for large bottle upgrade
-- ~4 Lucky Bamboo cuttings in test tubes
-- Lucky Bamboo in Jameson tinted bottle (upgraded)
-Weekly: RO water change + 1 drop booster per tube, 2–3 drops in Jameson bottle.
+WATER PLANTS (bottles & test tubes):
+${waterList || 'None yet.'}
 
-KEY RULES:
+KEY CARE RULES:
 - Always RO water (Mumbai tap has fluoride/chlorine issues)
-- Epsom salt for magnesium (1 tsp per 1L RO water, or ¼ tsp for palm maintenance)
+- Epsom salt for magnesium (1 tsp per 1L RO water)
 - Neem cake: antifungal + slow pH reducer
 - Sea Secret (IFFCO seaweed) as general tonic
-- Moisture meter: water Areca at 4–5, Aglaonema at 3, keep Bamboo moist during acclimation
-- Areca target pH: 6.0–6.5 (currently 7–8, too alkaline)
-- Never mist when mold present or moisture is high
-- Coriander: decided not to grow
-- Aglaonema cutting propagation: not started yet
+- Moisture meter: water Areca at 4-5, Aglaonema at 3, Bamboo moist during acclimation
+- Areca target pH: 6.0-6.5
+- Never mist when mold present
 
-If a photo is attached, describe what you observe and give specific advice. Be warm, specific, concise for mobile. Reference plants by name and ID.`;
+UPDATING PLANTS - You can update plant details when Inov asks. To update a plant, respond normally AND include this JSON block at the very end:
+\`\`\`json
+{"action": "update_plant", "id": "PLANT_ID", "fields": {"status": "new status", "location": "new location", "care_notes": "updated notes", "container_type": "soil"}}
+\`\`\`
+
+To ADD a new plant, include at the very end:
+\`\`\`json
+{"action": "add_plant", "id": "NEW_01", "name": "Plant Name", "emoji": "🌿", "container_type": "soil", "location": "somewhere", "status": "Growing", "care_notes": "care info", "quantity": 1}
+\`\`\`
+
+The app will automatically save to database and show a confirmation. Only include fields that are changing. Always confirm what you're doing in plain text before the JSON block.
+
+If a photo is attached, describe what you see and give specific advice. Be warm, specific, concise for mobile. Reference plants by name and ID.`;
+}
+
 
 // ── PLANT CHAT ──
 let plantChatHistory = [];
@@ -1814,8 +1781,9 @@ async function sendPlantChat() {
     const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
     content.push({ type:'image', source:{ type:'base64', media_type:mime, data:b64.split(',')[1] } });
   });
-  if (text) content.push({ type:'text', text: `[Regarding my ${plantData[currentPlantKey]?.name || 'plant'}] ${text}` });
-  else content.push({ type:'text', text:`[Regarding my ${plantData[currentPlantKey]?.name || 'plant'}] Please check this photo.` });
+  const cpName = getPlantByKey(currentPlantKey)?.name || 'plant';
+  if (text) content.push({ type:'text', text: `[Regarding my ${cpName}] ${text}` });
+  else content.push({ type:'text', text:`[Regarding my ${cpName}] Please check this photo.` });
 
   chatPendingPhotos = [];
   document.getElementById('chatPhotoStrip').innerHTML = '';
@@ -1826,7 +1794,7 @@ async function sendPlantChat() {
     const res = await fetch('https://ready-leigha-thetarkalab-c90f529e.koyeb.app/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:plantChatHistory, plantId:currentPlantKey })
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:buildSystemPrompt(), messages:plantChatHistory, plantId:currentPlantKey })
     });
     const data = await res.json();
     typing.remove();
@@ -1834,7 +1802,8 @@ async function sendPlantChat() {
       console.error('Chat error:', data);
       appendPlantMsg('Error: ' + (data.error || JSON.stringify(data)), 'bot');
     } else {
-      const reply = data.content?.[0]?.text || 'No response received.';
+      const rawReply = data.content?.[0]?.text || 'No response received.';
+      const reply = await handleAIAction(rawReply);
       plantChatHistory.push({ role:'assistant', content:reply });
       appendPlantMsg(reply, 'bot');
     }
@@ -1843,6 +1812,51 @@ async function sendPlantChat() {
     appendPlantMsg('Connection issue. Try again.', 'bot');
   }
   btn.classList.remove('loading'); btn.textContent = '↑';
+}
+
+
+async function handleAIAction(reply) {
+  // Look for JSON action blocks from the AI
+  const match = reply.match(/```json\s*({[\s\S]*?})\s*```/);
+  if (!match) return reply;
+  try {
+    const action = JSON.parse(match[1]);
+    let cleanReply = reply.replace(match[0], '').trim();
+    if (action.action === 'update_plant' && action.id) {
+      const res = await fetch(PROXY_URL + '/plant/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: action.id, ...action.fields })
+      });
+      if (res.ok) {
+        await loadPlants();
+        renderSoilPage();
+        renderWaterPage();
+        cleanReply += '\n\n✅ Plant updated in database.';
+      } else {
+        cleanReply += '\n\n⚠️ Could not save update to database.';
+      }
+    } else if (action.action === 'add_plant' && action.id && action.name) {
+      const res = await fetch(PROXY_URL + '/plant/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(action)
+      });
+      if (res.ok) {
+        await loadPlants();
+        renderSoilPage();
+        renderWaterPage();
+        loadCounts();
+        cleanReply += '\n\n✅ New plant added to database.';
+      } else {
+        cleanReply += '\n\n⚠️ Could not add plant to database.';
+      }
+    }
+    return cleanReply;
+  } catch(e) {
+    console.log('AI action parse error:', e);
+    return reply;
+  }
 }
 
 function appendPlantMsg(text, role) {
@@ -1909,7 +1923,7 @@ async function sendGlobalChat() {
     const res = await fetch('https://ready-leigha-thetarkalab-c90f529e.koyeb.app/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:globalChatHistory, plantId:null })
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:buildSystemPrompt(), messages:globalChatHistory, plantId:null })
     });
     const data = await res.json();
     typing.remove();
@@ -1917,7 +1931,8 @@ async function sendGlobalChat() {
       console.error('Chat error:', data);
       appendGlobalMsg('Error: ' + (data.error || JSON.stringify(data)), 'bot');
     } else {
-      const reply = data.content?.[0]?.text || 'No response received.';
+      const rawReply = data.content?.[0]?.text || 'No response received.';
+      const reply = await handleAIAction(rawReply);
       globalChatHistory.push({ role:'assistant', content:reply });
       appendGlobalMsg(reply, 'bot');
     }
@@ -1953,13 +1968,12 @@ function addTyping(containerId) {
 }
 
 function switchBnTab(tab) {
-  ['bn-home','bn-sched','bn-chat','bn2-home','bn2-sched','bn2-chat','bn3-home','bn3-sched','bn3-chat'].forEach(id => {
+  ['bn-home','bn-sched','bn-chat','bn-admin','bn2-home','bn2-sched','bn2-chat','bn2-admin','bn3-home','bn3-sched','bn3-chat','bn3-admin'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
   });
-  [`bn-${tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : 'chat'}`,
-   `bn2-${tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : 'chat'}`,
-   `bn3-${tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : 'chat'}`].forEach(id => {
+  const key = tab === 'home' ? 'home' : tab === 'sched' ? 'sched' : tab === 'admin' ? 'admin' : 'chat';
+  [`bn-${key}`,`bn2-${key}`,`bn3-${key}`].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('active');
   });
@@ -1982,12 +1996,13 @@ function showToast(msg) {
 
 
 // ── QUICK ACTIONS ON DETAIL PAGE ──
-const plantIdMap = { areca:'AP_01', aglaonema:'AG_01', bamboo:'LB_01', pothos:'PROP_01', monstera:'MA_01', 'bamboo-water':'PROP_LB', jameson:'LB_JAM' };
-const containerMap = { areca:'soil', aglaonema:'soil', bamboo:'soil', pothos:'test_tube', monstera:'test_tube', 'bamboo-water':'test_tube', jameson:'bottle' };
+// Dynamic id/container lookup (no hardcoding needed)
+function getPlantId(key) { const p = getPlantByKey(key); return p ? p.id : null; }
+function getPlantContainer(key) { const p = getPlantByKey(key); return p ? p.container_type : 'test_tube'; }
 
 async function quickWater() {
   if (!currentPlantKey) return;
-  const pid = plantIdMap[currentPlantKey];
+  const pid = getPlantId(currentPlantKey);
   if (!pid) return;
   // Check for supplement
   const supp = prompt('Any supplement added?\n1. None (plain water)\n2. Epsom Salt\n3. Neem Cake\n4. Sea Secret\n5. Booster Drop\n\nEnter number (or press Cancel):');
@@ -1999,8 +2014,8 @@ async function quickWater() {
 
 function quickTransfer() {
   if (!currentPlantKey) return;
-  const pid = plantIdMap[currentPlantKey];
-  const current = containerMap[currentPlantKey] || 'test_tube';
+  const pid = getPlantId(currentPlantKey);
+  const current = getPlantContainer(currentPlantKey) || 'test_tube';
   if (!pid) return;
   openTransferModal(pid, current);
 }
@@ -2138,6 +2153,230 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Backspace') pinDelete();
   }
 });
+
+
+// ══════════════════════════════════════════════════════
+// DYNAMIC PLANT RENDERING
+// ══════════════════════════════════════════════════════
+
+function statusClass(status) {
+  if (!status) return '';
+  const s = status.toLowerCase();
+  if (s.includes('recover')) return 'bar-recovering';
+  if (s.includes('shock')) return 'bar-shock';
+  if (s.includes('thri') || s.includes('healthy')) return 'bar-healthy';
+  return 'bar-healthy';
+}
+
+function badgeClass(status) {
+  if (!status) return 'tile-badge';
+  const s = status.toLowerCase();
+  if (s.includes('recover')) return 'tile-badge badge-recovering';
+  if (s.includes('shock')) return 'tile-badge badge-shock';
+  return 'tile-badge badge-healthy';
+}
+
+function renderSoilPage() {
+  const grid = document.getElementById('soilGrid');
+  if (!grid) return;
+  const soilPlants = allPlants.filter(p => p.container_type === 'soil');
+  if (!soilPlants.length) {
+    grid.innerHTML = '<div class="loading-msg" style="padding:30px;text-align:center;opacity:0.5;">No soil plants yet.<br>Add one via ⚙️ Plants tab.</div>';
+    return;
+  }
+  grid.innerHTML = soilPlants.map(p => {
+    const savedImg = localStorage.getItem('photo-hero-' + p.id);
+    const photoContent = savedImg
+      ? `<img src="${savedImg}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;position:absolute;inset:0;">`
+      : (p.emoji || '🌿');
+    return `
+    <div class="plant-tile" onclick="openPlantDetail('${p.id}')">
+      <div class="tile-status-bar ${statusClass(p.status)}"></div>
+      <div class="tile-inner">
+        <div class="tile-photo" id="thumb-${p.id}" onclick="event.stopPropagation()" style="position:relative;overflow:hidden;">
+          ${photoContent}
+          <div class="upload-hint">📷</div>
+          <input type="file" accept="image/*" onchange="setTilePhoto(event,'${p.id}')">
+        </div>
+        <div class="tile-info">
+          <div class="tile-name">${p.name}</div>
+          <div class="tile-id">${p.id} · ${(p.location || '').split('·')[0].trim()}</div>
+          <div class="tile-note">${p.status || ''}</div>
+        </div>
+        <span class="${badgeClass(p.status)}">${p.status || ''}</span>
+      </div>
+      <div class="tile-metrics">
+        <div class="mini-metric"><div class="mm-val" id="${p.id}-m">—</div><div class="mm-lbl">Moisture</div></div>
+        <div class="mini-metric"><div class="mm-val" id="${p.id}-p">—</div><div class="mm-lbl">pH</div></div>
+        <div class="mini-metric"><div class="mm-val" id="${p.id}-l">—</div><div class="mm-lbl">Light</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWaterPage() {
+  const grid = document.getElementById('waterGrid');
+  if (!grid) return;
+  const waterPlants = allPlants.filter(p => p.container_type === 'bottle' || p.container_type === 'test_tube');
+  if (!waterPlants.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:30px;text-align:center;opacity:0.5;">No water plants yet.<br>Add one via ⚙️ Plants tab.</div>';
+    return;
+  }
+  grid.innerHTML = waterPlants.map(p => {
+    const savedImg = localStorage.getItem('photo-hero-' + p.id);
+    const photoContent = savedImg
+      ? `<img src="${savedImg}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;position:absolute;inset:0;">`
+      : (p.emoji || '🌿');
+    const sub = p.location || (p.container_type === 'test_tube' ? 'Test Tube' : 'Bottle');
+    return `
+    <div class="water-tile" onclick="openPlantDetail('${p.id}')">
+      <div class="water-tile-photo" id="thumb-${p.id}" onclick="event.stopPropagation()" style="position:relative;overflow:hidden;">
+        ${photoContent}
+        <div class="upload-hint">📷</div>
+        <input type="file" accept="image/*" onchange="setWaterTilePhoto(event,'${p.id}')">
+      </div>
+      <div class="water-tile-name">${p.name}</div>
+      <div class="water-tile-sub">${sub}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// ADMIN PANEL
+// ══════════════════════════════════════════════════════
+
+function renderAdminPlants() {
+  const list = document.getElementById('adminPlantList');
+  if (!list) return;
+  if (!allPlants.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;opacity:0.5;">No plants yet. Tap ＋ to add one.</div>';
+    return;
+  }
+  const grouped = { soil: [], bottle: [], test_tube: [] };
+  allPlants.forEach(p => { (grouped[p.container_type] || grouped.soil).push(p); });
+  const labels = { soil: '🪴 Soil', bottle: '🍶 Bottle', test_tube: '🧪 Test Tubes' };
+  list.innerHTML = Object.entries(grouped).filter(([,arr]) => arr.length).map(([type, arr]) => `
+    <div style="margin-bottom:8px;">
+      <div class="section-label">${labels[type] || type}</div>
+      ${arr.map(p => `
+        <div onclick="editPlant('${p.id}')" style="display:flex;align-items:center;gap:14px;padding:14px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+          <div style="font-size:28px;flex-shrink:0;">${p.emoji || '🌿'}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;">${p.name}</div>
+            <div style="font-size:11px;opacity:0.55;margin-top:2px;">${p.id} · ${p.location || '—'}</div>
+            <div style="font-size:11px;color:var(--sage);margin-top:2px;">${p.status || ''}${p.quantity > 1 ? ' · qty: ' + p.quantity : ''}</div>
+          </div>
+          <div style="font-size:18px;opacity:0.3;">›</div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function showAddPlantModal() {
+  document.getElementById('modalTitle').textContent = 'Add Plant';
+  document.getElementById('modal-plant-id').value = '';
+  document.getElementById('modal-id').value = '';
+  document.getElementById('modal-id').disabled = false;
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-emoji').value = '';
+  document.getElementById('modal-container').value = 'soil';
+  document.getElementById('modal-location').value = '';
+  document.getElementById('modal-status').value = '';
+  document.getElementById('modal-qty').value = '1';
+  document.getElementById('modal-care').value = '';
+  document.getElementById('deletePlantBtn').style.display = 'none';
+  document.getElementById('plantModal').style.display = 'flex';
+}
+
+function editPlant(id) {
+  const p = allPlants.find(pl => pl.id === id);
+  if (!p) return;
+  document.getElementById('modalTitle').textContent = 'Edit Plant';
+  document.getElementById('modal-plant-id').value = id;
+  document.getElementById('modal-id').value = id;
+  document.getElementById('modal-id').disabled = true;
+  document.getElementById('modal-name').value = p.name || '';
+  document.getElementById('modal-emoji').value = p.emoji || '';
+  document.getElementById('modal-container').value = p.container_type || 'soil';
+  document.getElementById('modal-location').value = p.location || '';
+  document.getElementById('modal-status').value = p.status || '';
+  document.getElementById('modal-qty').value = p.quantity || 1;
+  document.getElementById('modal-care').value = p.care_notes || '';
+  document.getElementById('deletePlantBtn').style.display = 'block';
+  document.getElementById('plantModal').style.display = 'flex';
+}
+
+function closePlantModal() {
+  document.getElementById('plantModal').style.display = 'none';
+}
+
+async function savePlantModal() {
+  const existingId = document.getElementById('modal-plant-id').value;
+  const id = document.getElementById('modal-id').value.trim().toUpperCase();
+  const name = document.getElementById('modal-name').value.trim();
+  const emoji = document.getElementById('modal-emoji').value.trim();
+  const container_type = document.getElementById('modal-container').value;
+  const location = document.getElementById('modal-location').value.trim();
+  const status = document.getElementById('modal-status').value.trim();
+  const quantity = parseInt(document.getElementById('modal-qty').value) || 1;
+  const care_notes = document.getElementById('modal-care').value.trim();
+
+  if (!name || !id) { alert('Name and ID are required.'); return; }
+
+  const btn = document.querySelector('#plantModal button[onclick="savePlantModal()"]');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  try {
+    const isNew = !existingId;
+    const endpoint = isNew ? '/plant/add' : '/plant/update';
+    const body = isNew
+      ? { id, name, emoji, container_type, location, status, quantity, care_notes }
+      : { id: existingId, name, emoji, container_type, location, status, quantity, care_notes };
+
+    const res = await fetch(PROXY_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    // Reload plants and re-render
+    await loadPlants();
+    renderSoilPage();
+    renderWaterPage();
+    renderAdminPlants();
+    loadCounts();
+    closePlantModal();
+  } catch(e) {
+    alert('Error saving: ' + e.message);
+  } finally {
+    btn.textContent = 'Save Plant';
+    btn.disabled = false;
+  }
+}
+
+async function deletePlantModal() {
+  const id = document.getElementById('modal-plant-id').value;
+  if (!id) return;
+  const p = allPlants.find(pl => pl.id === id);
+  if (!confirm(`Delete "${p?.name || id}"? This cannot be undone.`)) return;
+
+  try {
+    await fetch(PROXY_URL + '/plant/' + id, { method: 'DELETE' });
+    await loadPlants();
+    renderSoilPage();
+    renderWaterPage();
+    renderAdminPlants();
+    loadCounts();
+    closePlantModal();
+  } catch(e) {
+    alert('Error deleting: ' + e.message);
+  }
+}
+
+// ── UPDATE SYSTEM PROMPT for AI to know about plant editing ──
+// (appended in buildSystemPrompt which is called per-chat-send)
+
 </script>
 </body>
 </html>
